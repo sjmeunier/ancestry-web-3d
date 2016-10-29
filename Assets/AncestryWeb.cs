@@ -1,26 +1,37 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using GedcomLib;
 using System;
 using Assets;
 
 public class AncestryWeb : MonoBehaviour {
 
-    private Dictionary<string, AncestorIndividual> ancestors = new Dictionary<string, AncestorIndividual>();
-    private Dictionary<string, GameObject> individualSpheres = new Dictionary<string, GameObject>();
+    public static Dictionary<string, AncestorIndividual> ancestors = new Dictionary<string, AncestorIndividual>();
+	public static Dictionary<string, Vector3> ancestorPositions = new Dictionary<string, Vector3>();
+    public static List<Vector3[]> decentLineVectors = new List<Vector3[]>();
+    public static List<Vector3[]> marriageLineVectors = new List<Vector3[]>();
+
+    private Dictionary<int, List<AncestorIndividual>> optimizedAncestors = new Dictionary<int, List<AncestorIndividual>>();
+    private Dictionary<int, int> ancestorGenerationCount = new Dictionary<int, int>();
+    private GameObject[] individualSpheres;
     private Dictionary<string, GedcomIndividual> gedcomIndividuals;
     private Dictionary<string, GedcomFamily> gedcomFamilies;
-    private int maxDepth = 10;
+    
+    private int maxDepth = 50;
+	private int highestDepth = 0;
 
-    private void ProcessAncestor(string individualId, string spouseId, string childId, float theta, int depth)
+    private void ProcessAncestor(string individualId, string spouseId, string childId, long ahnentafelNumber, int depth)
     {
         if (ancestors.ContainsKey(individualId))
         {
-            IncrementAppearance(individualId, childId, depth);
+            IncrementAppearance(individualId, childId, ahnentafelNumber, depth);
         }
         else
         {
+			highestDepth = Math.Max(depth, highestDepth);
+			
             AncestorIndividual individual = new AncestorIndividual(individualId);
             GedcomIndividual gedcomIndividual = gedcomIndividuals[individualId];
 
@@ -35,10 +46,7 @@ public class AncestryWeb : MonoBehaviour {
             individual.LowestGeneration = depth;
             individual.HighestGeneration = depth;
 
-            individual.radius = 1;
-            individual.y = individual.HighestGeneration;
-            individual.r = individual.HighestGeneration;
-            individual.theta = theta;
+			individual.AhnentafelNumber = ahnentafelNumber;
 
             if (!string.IsNullOrEmpty(childId))
                 individual.ChildrenIds.Add(childId);
@@ -63,21 +71,25 @@ public class AncestryWeb : MonoBehaviour {
             if (depth <= maxDepth)
             {
                 if (!string.IsNullOrEmpty(individual.FatherId))
-                    ProcessAncestor(individual.FatherId, individual.MotherId, individualId, theta + (float)((Math.PI /2.0) / Math.Pow(2, individual.y )), depth + 1);
+                    ProcessAncestor(individual.FatherId, individual.MotherId, individualId, 2 * ahnentafelNumber, depth + 1);
 
                 if (!string.IsNullOrEmpty(individual.MotherId))
-                    ProcessAncestor(individual.MotherId, individual.FatherId, individualId, theta - (float)((Math.PI / 2.0) / Math.Pow(2, individual.y)), depth + 1);
+                    ProcessAncestor(individual.MotherId, individual.FatherId, individualId, 2 * ahnentafelNumber + 1, depth + 1);
             }
         }
     }
 
-    private void IncrementAppearance(string individualId, string childId, int depth)
+    private void IncrementAppearance(string individualId, string childId, long ahnentafelNumber, int depth)
     {
         if (ancestors.ContainsKey(individualId))
         {
+			highestDepth = Math.Max(depth, highestDepth);
+			
             AncestorIndividual individual = ancestors[individualId];
             individual.LowestGeneration = Math.Min(individual.LowestGeneration, depth);
-            individual.HighestGeneration = Math.Min(individual.HighestGeneration, depth);
+			if (depth > individual.HighestGeneration){
+				individual.AhnentafelNumber = ahnentafelNumber;
+			}
             individual.AppearanceCount++;
 
             if (!string.IsNullOrEmpty(childId))
@@ -86,12 +98,25 @@ public class AncestryWeb : MonoBehaviour {
             ancestors[individualId] = individual;
 
             if (!string.IsNullOrEmpty(individual.FatherId))
-                IncrementAppearance(individual.FatherId, individualId, depth + 1);
+                IncrementAppearance(individual.FatherId, individualId, 2 * ahnentafelNumber, depth + 1);
 
             if (!string.IsNullOrEmpty(individual.MotherId))
-                IncrementAppearance(individual.MotherId, individualId, depth + 1);
+                IncrementAppearance(individual.MotherId, individualId, 2 * ahnentafelNumber + 1, depth + 1);
 
         }
+    }
+
+	private void CalculateAncestorCountPerGenerationDictionary()
+	{
+		for(int i = 0; i <= highestDepth; i++) {
+			optimizedAncestors.Add(i, ancestors.Values.Where(x => x.HighestGeneration == i).ToList());
+        }
+
+        for (int i = 0; i <= highestDepth; i++)
+        {
+            ancestorGenerationCount.Add(i, optimizedAncestors[i].Count());
+        }
+
     }
 
     private void InitialiseAncestors(string filename)
@@ -101,17 +126,61 @@ public class AncestryWeb : MonoBehaviour {
         gedcomFamilies = parser.gedcomFamilies;
         gedcomIndividuals = parser.gedcomIndividuals;
 
-        ProcessAncestor("@I7952@", string.Empty, string.Empty, 0, 0);
+        ProcessAncestor("@I7952@", string.Empty, string.Empty, 1, 0);
+		CalculateAncestorCountPerGenerationDictionary();
+		
     }
 
     private void CreateAncestorObjects()
     {
+		individualSpheres = new GameObject[ancestors.Count()];
+		float angle = 0, angleDelta;
+
+        int individualCount = 0;
+
+        
+		//Draw spheres
+		for(int i = 0; i <= highestDepth; i++)
+        {
+			angleDelta = (float)((Math.PI * 2) / optimizedAncestors[i].Count());
+			angle = angleDelta / 2;
+
+            int ancestorCount = ancestorGenerationCount[i];
+            float radius = (4f * (float)ancestorCount) / (2f * (float)Math.PI);
+            if (i == 0)
+                radius = 0;
+
+			foreach(AncestorIndividual individual in optimizedAncestors[i].OrderBy(x => x.AhnentafelNumber)) {
+				ancestorPositions.Add(individual.Id, new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8, (float)(radius * Math.Sin(angle))));
+				individualSpheres[individualCount] = (GameObject)Instantiate(Resources.Load("IndividualSphere"), new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8, (float)(radius * Math.Sin(angle))), Quaternion.identity);
+                if (individual.Sex == "M")
+                    individualSpheres[individualCount].transform.GetChild(0).GetComponent<Renderer>().material.color = Color.blue;
+                else
+                    individualSpheres[individualCount].transform.GetChild(0).GetComponent<Renderer>().material.color = Color.red;
+                angle += angleDelta;
+			}
+            individualCount++;
+        }
+
+        //Update lines
+        
         foreach (AncestorIndividual individual in ancestors.Values)
         {
-            individualSpheres.Add(individual.Id, (GameObject)Instantiate(Resources.Load("IndividualSphere"), new Vector3((float)(individual.r * Math.Cos(individual.theta) * 4), individual.y * 6, (float)(individual.r * Math.Sin(individual.theta) * 4)), Quaternion.identity));
-        }
+            if (individual.FatherId != null && ancestors.ContainsKey(individual.FatherId))
+            {
+                decentLineVectors.Add(new Vector3[2] { AncestryWeb.ancestorPositions[individual.Id], AncestryWeb.ancestorPositions[individual.FatherId] });
+            }
+            if (individual.MotherId != null && ancestors.ContainsKey(individual.MotherId))
+            {
+                decentLineVectors.Add(new Vector3[2] { AncestryWeb.ancestorPositions[individual.Id], AncestryWeb.ancestorPositions[individual.MotherId] });
+            }
+            if (individual.SpouseId != null && ancestors.ContainsKey(individual.SpouseId))
+            {
+                marriageLineVectors.Add(new Vector3[2] { AncestryWeb.ancestorPositions[individual.Id], AncestryWeb.ancestorPositions[individual.SpouseId] });
+            }
+        };
     }
-
+	
     // Use this for initialization
     void Start () {
         InitialiseAncestors("C:\\Genealogy\\Meunier-20160924.ged");

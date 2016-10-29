@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,10 +22,7 @@ namespace Assets
         public int HighestGeneration;
         public int AppearanceCount;
         public HashSet<string> ChildrenIds;
-        public float y;
-        public float theta;
-        public float radius;
-        public float r;
+		public long AhnentafelNumber;
 
         public AncestorIndividual(string id)
         {
@@ -45,10 +42,7 @@ namespace Assets
             AppearanceCount = 0;
             ChildrenIds = new HashSet<string>();
 
-            y = 0;
-            theta = 0;
-            radius = 0;
-            r = 0;
+            AhnentafelNumber = 0;
         }
     }
 
