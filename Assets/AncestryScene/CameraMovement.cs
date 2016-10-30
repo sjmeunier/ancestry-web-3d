@@ -58,6 +58,9 @@ public class CameraMovement : MonoBehaviour
 
             transform.RotateAround(transform.position, transform.right, -pos.y * turnSpeed);
             transform.RotateAround(transform.position, Vector3.up, pos.x * turnSpeed);
+
+          //  foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individuals"))
+          //      individualSphere.transform.LookAt(Camera.main.transform);
         }
 
         // Move the camera on it's XY plane

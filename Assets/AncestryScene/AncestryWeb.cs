@@ -161,6 +161,7 @@ public class AncestryWeb : MonoBehaviour {
                 individualSpheres[individualCount].transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius);
 
                 individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = individual.GivenName + " " + individual.Surname + "\r\n" + individual.Suffix;
+                //individualSpheres[individualCount].tag = "Individual";
 
             angle += angleDelta;
 			}
