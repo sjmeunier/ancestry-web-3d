@@ -160,7 +160,7 @@ public class AncestryWeb : MonoBehaviour {
                 float sphereRadius = (float)(Math.Log10(individual.AppearanceCount) + 1) * Settings.scaleFactor;
                 individualSpheres[individualCount].transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius);
 
-                individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = individual.GivenName + " " + individual.Surname + "\r\n" + individual.Suffix + "\r\n" + GenerateBirthDeathDate(individual);
+                individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = individual.GivenName + " " + individual.Surname + (!string.IsNullOrEmpty(individual.Suffix) ? "\r\n" + individual.Suffix : "") + "\r\n" + GenerateBirthDeathDate(individual);
                 individualSpheres[individualCount].tag = "Individual";
 
             angle += angleDelta;
