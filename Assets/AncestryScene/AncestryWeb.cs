@@ -19,8 +19,9 @@ public class AncestryWeb : MonoBehaviour {
     private GameObject[] individualSpheres;
     private Dictionary<string, GedcomIndividual> gedcomIndividuals;
     private Dictionary<string, GedcomFamily> gedcomFamilies;
+
     
-	private int highestDepth = 0;
+    private int highestDepth = 0;
 
     private void ProcessAncestor(string individualId, string spouseId, string childId, long ahnentafelNumber, int depth)
     {
@@ -138,28 +139,30 @@ public class AncestryWeb : MonoBehaviour {
 
         int individualCount = 0;
 
-        
-		//Draw spheres
-		for(int i = 0; i <= highestDepth; i++)
+        //Draw spheres
+        for (int i = 0; i <= highestDepth; i++)
         {
 			angleDelta = (float)((Math.PI * 2) / optimizedAncestors[i].Count());
 			angle = angleDelta / 2;
 
             int ancestorCount = ancestorGenerationCount[i];
-            float radius = (5f * (float)ancestorCount) / (2f * (float)Math.PI);
+            float radius = (5f * (float)ancestorCount) / (2f * (float)Math.PI) * Settings.scaleFactor;
             if (i == 0)
                 radius = 0;
 
 			foreach(AncestorIndividual individual in optimizedAncestors[i].OrderBy(x => x.AhnentafelNumber)) {
-				ancestorPositions.Add(individual.Id, new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8, (float)(radius * Math.Sin(angle))));
-				individualSpheres[individualCount] = (GameObject)Instantiate(Resources.Load("IndividualSphere"), new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8, (float)(radius * Math.Sin(angle))), Quaternion.identity);
+				ancestorPositions.Add(individual.Id, new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8 * Settings.scaleFactor, (float)(radius * Math.Sin(angle))));
+				individualSpheres[individualCount] = (GameObject)Instantiate(Resources.Load("IndividualSphere"), new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8 * Settings.scaleFactor, (float)(radius * Math.Sin(angle))), Quaternion.identity);
                 if (individual.Sex == "M")
                     individualSpheres[individualCount].transform.GetChild(0).GetComponent<Renderer>().material.color = Color.blue;
                 else
                     individualSpheres[individualCount].transform.GetChild(0).GetComponent<Renderer>().material.color = Color.red;
-                float sphereRadius = (float)Math.Log10(individual.AppearanceCount) + 1;
+                float sphereRadius = (float)(Math.Log10(individual.AppearanceCount) + 1) * Settings.scaleFactor;
                 individualSpheres[individualCount].transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius);
-                angle += angleDelta;
+
+                individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = individual.GivenName + " " + individual.Surname + "\r\n" + individual.Suffix;
+
+            angle += angleDelta;
 			}
             individualCount++;
         }
@@ -194,4 +197,5 @@ public class AncestryWeb : MonoBehaviour {
         InitialiseAncestors(GedcomFilename);
         CreateAncestorObjects();
     }
+    
 }
