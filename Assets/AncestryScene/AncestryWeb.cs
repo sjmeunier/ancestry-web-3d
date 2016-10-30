@@ -5,13 +5,15 @@ using System.Linq;
 using GedcomLib;
 using System;
 using Assets;
+using UnityEditor;
 
 public class AncestryWeb : MonoBehaviour {
-
     public static Dictionary<string, AncestorIndividual> ancestors = new Dictionary<string, AncestorIndividual>();
 	public static Dictionary<string, Vector3> ancestorPositions = new Dictionary<string, Vector3>();
-    public static List<Vector3[]> decentLineVectors = new List<Vector3[]>();
+    public static List<Vector3[]> decentMaleLineVectors = new List<Vector3[]>();
+    public static List<Vector3[]> decentFemaleLineVectors = new List<Vector3[]>();
     public static List<Vector3[]> marriageLineVectors = new List<Vector3[]>();
+    public static string GedcomFilename;
 
     private Dictionary<int, List<AncestorIndividual>> optimizedAncestors = new Dictionary<int, List<AncestorIndividual>>();
     private Dictionary<int, int> ancestorGenerationCount = new Dictionary<int, int>();
@@ -19,7 +21,6 @@ public class AncestryWeb : MonoBehaviour {
     private Dictionary<string, GedcomIndividual> gedcomIndividuals;
     private Dictionary<string, GedcomFamily> gedcomFamilies;
     
-    private int maxDepth = 50;
 	private int highestDepth = 0;
 
     private void ProcessAncestor(string individualId, string spouseId, string childId, long ahnentafelNumber, int depth)
@@ -68,7 +69,7 @@ public class AncestryWeb : MonoBehaviour {
             individual.SpouseId = spouseId;
 
             ancestors.Add(individualId, individual);
-            if (depth <= maxDepth)
+            if (depth <= Settings.MaxDepth)
             {
                 if (!string.IsNullOrEmpty(individual.FatherId))
                     ProcessAncestor(individual.FatherId, individual.MotherId, individualId, 2 * ahnentafelNumber, depth + 1);
@@ -168,11 +169,11 @@ public class AncestryWeb : MonoBehaviour {
         {
             if (individual.FatherId != null && ancestors.ContainsKey(individual.FatherId))
             {
-                decentLineVectors.Add(new Vector3[2] { AncestryWeb.ancestorPositions[individual.Id], AncestryWeb.ancestorPositions[individual.FatherId] });
+                decentMaleLineVectors.Add(new Vector3[2] { AncestryWeb.ancestorPositions[individual.Id], AncestryWeb.ancestorPositions[individual.FatherId] });
             }
             if (individual.MotherId != null && ancestors.ContainsKey(individual.MotherId))
             {
-                decentLineVectors.Add(new Vector3[2] { AncestryWeb.ancestorPositions[individual.Id], AncestryWeb.ancestorPositions[individual.MotherId] });
+                decentFemaleLineVectors.Add(new Vector3[2] { AncestryWeb.ancestorPositions[individual.Id], AncestryWeb.ancestorPositions[individual.MotherId] });
             }
             if (individual.SpouseId != null && ancestors.ContainsKey(individual.SpouseId))
             {
@@ -180,16 +181,16 @@ public class AncestryWeb : MonoBehaviour {
             }
         };
     }
-	
-    // Use this for initialization
-    void Start () {
-        InitialiseAncestors("C:\\Genealogy\\Meunier-20160924.ged");
 
-        CreateAncestorObjects();
-	}
-	
+
 	// Update is called once per frame
 	void Update () {
-	
-	}
+
+    }
+
+    void Start()
+    {
+        InitialiseAncestors(GedcomFilename);
+        CreateAncestorObjects();
+    }
 }

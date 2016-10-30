@@ -8,6 +8,9 @@ public class CameraMovement : MonoBehaviour
     public float panSpeed = 4.0f;       // Speed of the camera when being panned
     public float zoomSpeed = 4.0f;      // Speed of the camera going back and forth
 
+    public float keyZoomSpeed = 8.0f;
+    public float keyPanSpeed = 8.0f;
+
     private Vector3 mouseOrigin;    // Position of cursor when mouse dragging starts
     private bool isPanning;     // Is the camera being panned?
     private bool isRotating;    // Is the camera being rotated?
@@ -73,6 +76,25 @@ public class CameraMovement : MonoBehaviour
 
             Vector3 move = pos.y * zoomSpeed * transform.forward;
             transform.Translate(move, Space.World);
+        }
+
+
+        //Key movement
+        if (Input.GetKey(KeyCode.RightArrow))
+        {
+            transform.Translate(new Vector3(keyPanSpeed * Time.deltaTime, 0, 0));
+        }
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            transform.Translate(new Vector3(-keyPanSpeed * Time.deltaTime, 0, 0));
+        }
+        if (Input.GetKey(KeyCode.DownArrow))
+        {
+            transform.Translate(new Vector3(0, 0, -keyZoomSpeed * Time.deltaTime));
+        }
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            transform.Translate(new Vector3(0, 0, keyZoomSpeed * Time.deltaTime));
         }
     }
 }
