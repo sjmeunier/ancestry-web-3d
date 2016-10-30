@@ -4,12 +4,12 @@ using System.Collections;
 public class CameraMovement : MonoBehaviour
 {
 
-    public float turnSpeed = 4.0f;      // Speed of camera turning when mouse moves in along an axis
-    public float panSpeed = 4.0f;       // Speed of the camera when being panned
-    public float zoomSpeed = 4.0f;      // Speed of the camera going back and forth
+    public float turnSpeed = 6.0f;      // Speed of camera turning when mouse moves in along an axis
+    public float panSpeed = 6.0f;       // Speed of the camera when being panned
+    public float zoomSpeed = 6.0f;      // Speed of the camera going back and forth
 
-    public float keyZoomSpeed = 8.0f;
-    public float keyPanSpeed = 8.0f;
+    public float keyZoomSpeed = 16.0f;
+    public float keyPanSpeed = 16.0f;
 
     private Vector3 mouseOrigin;    // Position of cursor when mouse dragging starts
     private bool isPanning;     // Is the camera being panned?

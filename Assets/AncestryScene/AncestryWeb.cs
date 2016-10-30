@@ -5,7 +5,6 @@ using System.Linq;
 using GedcomLib;
 using System;
 using Assets;
-using UnityEditor;
 
 public class AncestryWeb : MonoBehaviour {
     public static Dictionary<string, AncestorIndividual> ancestors = new Dictionary<string, AncestorIndividual>();
@@ -147,7 +146,7 @@ public class AncestryWeb : MonoBehaviour {
 			angle = angleDelta / 2;
 
             int ancestorCount = ancestorGenerationCount[i];
-            float radius = (4f * (float)ancestorCount) / (2f * (float)Math.PI);
+            float radius = (5f * (float)ancestorCount) / (2f * (float)Math.PI);
             if (i == 0)
                 radius = 0;
 
@@ -158,6 +157,8 @@ public class AncestryWeb : MonoBehaviour {
                     individualSpheres[individualCount].transform.GetChild(0).GetComponent<Renderer>().material.color = Color.blue;
                 else
                     individualSpheres[individualCount].transform.GetChild(0).GetComponent<Renderer>().material.color = Color.red;
+                float sphereRadius = (float)Math.Log10(individual.AppearanceCount) + 1;
+                individualSpheres[individualCount].transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius);
                 angle += angleDelta;
 			}
             individualCount++;
