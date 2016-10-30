@@ -160,8 +160,8 @@ public class AncestryWeb : MonoBehaviour {
                 float sphereRadius = (float)(Math.Log10(individual.AppearanceCount) + 1) * Settings.scaleFactor;
                 individualSpheres[individualCount].transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius);
 
-                individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = individual.GivenName + " " + individual.Surname + "\r\n" + individual.Suffix;
-                //individualSpheres[individualCount].tag = "Individual";
+                individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = individual.GivenName + " " + individual.Surname + "\r\n" + individual.Suffix + "\r\n" + GenerateBirthDeathDate(individual);
+                individualSpheres[individualCount].tag = "Individual";
 
             angle += angleDelta;
 			}
@@ -187,9 +187,54 @@ public class AncestryWeb : MonoBehaviour {
         };
     }
 
+    private string ProcessDate(string date)
+    {
+        if (string.IsNullOrEmpty(date))
+        {
+            date = "?";
+        }
+        else
+        {
+            string[] dateArr = date.Split(new char[] { ' ' });
+            if (dateArr.Length > 1)
+            {
+                date = "";
+                if (dateArr[0] == "ABT")
+                    date = "c";
+                else if (dateArr[0] == "AFT")
+                    date = ">";
+                else if (dateArr[0] == "BEF")
+                    date = "<";
+                date += dateArr[dateArr.Length - 1];
 
-	// Update is called once per frame
-	void Update () {
+                int year = 0;
+                Int32.TryParse(dateArr[dateArr.Length - 1], out year);
+                if (year > 2008)
+                    date = "?";
+            }
+        }
+
+        return date;
+    }
+
+    private string GenerateBirthDeathDate(AncestorIndividual individual)
+    {
+        string born = ProcessDate(individual.BirthDate);
+        string died = ProcessDate(individual.DiedDate);
+        if (born != "?" || died != "?")
+        {
+            if (born == "?")
+                return string.Format("(d.{0})", died);
+            else if (died == "?")
+                return string.Format("(b.{0})", born);
+            else
+                return string.Format("(b.{0}, d.{1})", born, died);
+        }
+        return string.Empty;
+    }
+
+    // Update is called once per frame
+    void Update () {
 
     }
 
