@@ -78,6 +78,10 @@ public class FileBrowser{
 			oldSkin = GUI.skin;
 			GUI.skin = guiSkin;
 		}
+        GUIStyle fileStyle = new GUIStyle();
+        fileStyle.alignment = TextAnchor.MiddleLeft;
+        fileStyle.normal.textColor = Color.white;
+
 		GUILayout.BeginArea(guiSize);
 		GUILayout.BeginVertical("box");
 		switch(layout){
@@ -96,14 +100,14 @@ public class FileBrowser{
 						folderScroll = GUILayout.BeginScrollView(folderScroll);
 						if(showDrives){
 							foreach(DirectoryInformation di in drives){
-								if(di.button()){	getFileList(di.di);	}
+								if(di.button(fileStyle)){	getFileList(di.di);	}
 							}
 						}else{
-							if((backStyle != null)?parentDir.button(backStyle):parentDir.button())
+							if((backStyle != null)?parentDir.button(backStyle):parentDir.button(fileStyle))
 								getFileList(parentDir.di);
 						}
 						foreach(DirectoryInformation di in directories){
-							if(di.button()){	getFileList(di.di);	}
+							if(di.button(fileStyle)){	getFileList(di.di);	}
 						}
 						GUILayout.EndScrollView();
 					GUILayout.EndVertical();
@@ -117,7 +121,7 @@ public class FileBrowser{
 									defaultColor = GUI.color;
 									GUI.color = selectedColor;
 								}
-								if(files[fi].button()){
+								if(files[fi].button(fileStyle)){
 									outputFile = files[fi].fi;
 									selectedFile = fi;
 								}
