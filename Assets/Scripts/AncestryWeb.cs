@@ -15,6 +15,7 @@ public class AncestryWeb : MonoBehaviour
     public static List<Vector3[]> marriageLineVectors = new List<Vector3[]>();
     public static string GedcomFilename;
     public static AncestryState ancestryState = AncestryState.Settings;
+    public static string selectedIndividualId = null;
 
     private Dictionary<int, List<AncestorIndividual>> optimizedAncestors = new Dictionary<int, List<AncestorIndividual>>();
     private Dictionary<int, int> ancestorGenerationCount = new Dictionary<int, int>();
@@ -284,6 +285,19 @@ public class AncestryWeb : MonoBehaviour
             InitialiseAncestors(GedcomFilename);
             CreateAncestorObjects();
             ancestryState = AncestryState.Main;
+        }
+        else if (ancestryState == AncestryState.Main)
+        {
+            if (selectedIndividualId != null)
+            {
+                AncestorIndividual individual = ancestors[selectedIndividualId];
+
+                GUILayout.BeginArea(new Rect(Screen.width * 0.125f, Screen.height * 0.125f, Screen.width * 0.75f, Screen.height * 0.75f));
+                GUILayout.BeginVertical("box");
+                GUILayout.Label(individual.GivenName + " " + individual.Surname);
+                GUILayout.EndVertical();
+                GUILayout.EndArea();
+            }
         }
     }
 }

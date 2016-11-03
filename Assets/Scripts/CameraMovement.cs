@@ -105,9 +105,11 @@ public class CameraMovement : MonoBehaviour
 
 
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        AncestryWeb.selectedIndividualId = null;
         if (Physics.Raycast(ray, out hit))
         {
-            Debug.Log(hit.collider.name);
+            if (hit.collider.name == "Sphere")
+                AncestryWeb.selectedIndividualId = hit.collider.GetComponentInParent<IndividualSphere>().individualId;
         }
     }
 }
