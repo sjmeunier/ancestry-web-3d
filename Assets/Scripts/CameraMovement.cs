@@ -3,13 +3,15 @@ using System.Collections;
 
 public class CameraMovement : MonoBehaviour
 {
+    Ray ray;
+    RaycastHit hit;
 
     public float turnSpeed = 6.0f;      // Speed of camera turning when mouse moves in along an axis
-    public float panSpeed = 6.0f * Settings.scaleFactor;       // Speed of the camera when being panned
-    public float zoomSpeed = 6.0f * Settings.scaleFactor;      // Speed of the camera going back and forth
+    public float panSpeed = 6.0f * Settings.ScaleFactor;       // Speed of the camera when being panned
+    public float zoomSpeed = 6.0f * Settings.ScaleFactor;      // Speed of the camera going back and forth
 
-    public float keyZoomSpeed = 16.0f * Settings.scaleFactor;
-    public float keyPanSpeed = 16.0f * Settings.scaleFactor;
+    public float keyZoomSpeed = 16.0f * Settings.ScaleFactor;
+    public float keyPanSpeed = 16.0f * Settings.ScaleFactor;
 
     private Vector3 mouseOrigin;    // Position of cursor when mouse dragging starts
     private bool isPanning;     // Is the camera being panned?
@@ -98,6 +100,14 @@ public class CameraMovement : MonoBehaviour
         if (Input.GetKey(KeyCode.UpArrow))
         {
             transform.Translate(new Vector3(0, 0, keyZoomSpeed * Time.deltaTime));
+        }
+
+
+
+        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out hit))
+        {
+            Debug.Log(hit.collider.name);
         }
     }
 }

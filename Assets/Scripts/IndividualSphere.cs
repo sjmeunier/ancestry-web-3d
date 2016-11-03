@@ -3,6 +3,8 @@ using System.Collections;
 
 public class IndividualSphere : MonoBehaviour {
 
+    public string individualId = null;
+
 	// Use this for initialization
 	void Start () {
 	

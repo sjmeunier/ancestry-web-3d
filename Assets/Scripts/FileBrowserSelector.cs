@@ -8,7 +8,7 @@ public class FileBrowserSelector : MonoBehaviour {
 	
 	//initialize file browser
 	FileBrowser fb = new FileBrowser();
-    Loader loader = new Loader();
+
 
     bool fileSelected = false;
 
@@ -24,7 +24,6 @@ public class FileBrowserSelector : MonoBehaviour {
 	void OnGUI(){
         if (fileSelected)
         {
-            loader.draw();
             SceneManager.LoadScene("AncestryScene");
         }
         else

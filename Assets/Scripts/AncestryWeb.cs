@@ -6,13 +6,15 @@ using GedcomLib;
 using System;
 using Assets;
 
-public class AncestryWeb : MonoBehaviour {
+public class AncestryWeb : MonoBehaviour
+{
     public static Dictionary<string, AncestorIndividual> ancestors = new Dictionary<string, AncestorIndividual>();
-	public static Dictionary<string, Vector3> ancestorPositions = new Dictionary<string, Vector3>();
+    public static Dictionary<string, Vector3> ancestorPositions = new Dictionary<string, Vector3>();
     public static List<Vector3[]> decentMaleLineVectors = new List<Vector3[]>();
     public static List<Vector3[]> decentFemaleLineVectors = new List<Vector3[]>();
     public static List<Vector3[]> marriageLineVectors = new List<Vector3[]>();
     public static string GedcomFilename;
+    public static AncestryState ancestryState = AncestryState.Settings;
 
     private Dictionary<int, List<AncestorIndividual>> optimizedAncestors = new Dictionary<int, List<AncestorIndividual>>();
     private Dictionary<int, int> ancestorGenerationCount = new Dictionary<int, int>();
@@ -20,8 +22,17 @@ public class AncestryWeb : MonoBehaviour {
     private Dictionary<string, GedcomIndividual> gedcomIndividuals;
     private Dictionary<string, GedcomFamily> gedcomFamilies;
 
-    
+    Loader loader = new Loader();
+    SettingsScreen settingsScreen = new SettingsScreen();
+
     private int highestDepth = 0;
+
+    public enum AncestryState
+    {
+        Settings,
+        Loading,
+        Main
+    }
 
     private void ProcessAncestor(string individualId, string spouseId, string childId, long ahnentafelNumber, int depth)
     {
@@ -31,8 +42,8 @@ public class AncestryWeb : MonoBehaviour {
         }
         else
         {
-			highestDepth = Math.Max(depth, highestDepth);
-			
+            highestDepth = Math.Max(depth, highestDepth);
+
             AncestorIndividual individual = new AncestorIndividual(individualId);
             GedcomIndividual gedcomIndividual = gedcomIndividuals[individualId];
 
@@ -47,7 +58,7 @@ public class AncestryWeb : MonoBehaviour {
             individual.LowestGeneration = depth;
             individual.HighestGeneration = depth;
 
-			individual.AhnentafelNumber = ahnentafelNumber;
+            individual.AhnentafelNumber = ahnentafelNumber;
 
             if (!string.IsNullOrEmpty(childId))
                 individual.ChildrenIds.Add(childId);
@@ -84,13 +95,14 @@ public class AncestryWeb : MonoBehaviour {
     {
         if (ancestors.ContainsKey(individualId))
         {
-			highestDepth = Math.Max(depth, highestDepth);
-			
+            highestDepth = Math.Max(depth, highestDepth);
+
             AncestorIndividual individual = ancestors[individualId];
             individual.LowestGeneration = Math.Min(individual.LowestGeneration, depth);
-			if (depth > individual.HighestGeneration){
-				individual.AhnentafelNumber = ahnentafelNumber;
-			}
+            if (depth > individual.HighestGeneration)
+            {
+                individual.AhnentafelNumber = ahnentafelNumber;
+            }
             individual.AppearanceCount++;
 
             if (!string.IsNullOrEmpty(childId))
@@ -107,10 +119,11 @@ public class AncestryWeb : MonoBehaviour {
         }
     }
 
-	private void CalculateAncestorCountPerGenerationDictionary()
-	{
-		for(int i = 0; i <= highestDepth; i++) {
-			optimizedAncestors.Add(i, ancestors.Values.Where(x => x.HighestGeneration == i).ToList());
+    private void CalculateAncestorCountPerGenerationDictionary()
+    {
+        for (int i = 0; i <= highestDepth; i++)
+        {
+            optimizedAncestors.Add(i, ancestors.Values.Where(x => x.HighestGeneration == i).ToList());
         }
 
         for (int i = 0; i <= highestDepth; i++)
@@ -127,58 +140,60 @@ public class AncestryWeb : MonoBehaviour {
         gedcomFamilies = parser.gedcomFamilies;
         gedcomIndividuals = parser.gedcomIndividuals;
 
-        ProcessAncestor("@I7952@", string.Empty, string.Empty, 1, 0);
-		CalculateAncestorCountPerGenerationDictionary();
-		
+        ProcessAncestor("@" + Settings.RootIndividualId + "@", string.Empty, string.Empty, 1, 0);
+        CalculateAncestorCountPerGenerationDictionary();
+
     }
 
     private void CreateAncestorObjects()
     {
-		individualSpheres = new GameObject[ancestors.Count()];
-		float angle = 0, angleDelta;
+        individualSpheres = new GameObject[ancestors.Count()];
+        float angle = 0, angleDelta;
 
         int individualCount = 0;
 
         //Draw spheres
         for (int i = 0; i <= highestDepth; i++)
         {
-			angleDelta = (float)((Math.PI * 2) / optimizedAncestors[i].Count());
-			angle = angleDelta / 2;
+            angleDelta = (float)((Math.PI * 2) / optimizedAncestors[i].Count());
+            angle = angleDelta / 2;
 
             int ancestorCount = ancestorGenerationCount[i];
-            float radius = (5f * (float)ancestorCount) / (2f * (float)Math.PI) * Settings.scaleFactor;
+            float radius = (5f * (float)ancestorCount) / (2f * (float)Math.PI) * Settings.ScaleFactor;
             if (i == 0)
                 radius = 0;
 
-			foreach(AncestorIndividual individual in optimizedAncestors[i].OrderBy(x => x.AhnentafelNumber)) {
-				ancestorPositions.Add(individual.Id, new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8 * Settings.scaleFactor, (float)(radius * Math.Sin(angle))));
+            foreach (AncestorIndividual individual in optimizedAncestors[i].OrderBy(x => x.AhnentafelNumber))
+            {
+                ancestorPositions.Add(individual.Id, new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8 * Settings.ScaleFactor, (float)(radius * Math.Sin(angle))));
                 if (string.IsNullOrEmpty(individual.FatherId) && string.IsNullOrEmpty(individual.MotherId))
                 {
-                    individualSpheres[individualCount] = (GameObject)Instantiate(Resources.Load("IndividualEndSphere"), new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8 * Settings.scaleFactor, (float)(radius * Math.Sin(angle))), Quaternion.identity);
+                    individualSpheres[individualCount] = (GameObject)Instantiate(Resources.Load("IndividualEndSphere"), new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8 * Settings.ScaleFactor, (float)(radius * Math.Sin(angle))), Quaternion.identity);
                 }
                 else
                 {
-                    individualSpheres[individualCount] = (GameObject)Instantiate(Resources.Load("IndividualSphere"), new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8 * Settings.scaleFactor, (float)(radius * Math.Sin(angle))), Quaternion.identity);
+                    individualSpheres[individualCount] = (GameObject)Instantiate(Resources.Load("IndividualSphere"), new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8 * Settings.ScaleFactor, (float)(radius * Math.Sin(angle))), Quaternion.identity);
                 }
                 if (individual.Sex == "M")
                     individualSpheres[individualCount].transform.GetChild(0).GetComponent<Renderer>().material.color = Color.blue;
                 else
                     individualSpheres[individualCount].transform.GetChild(0).GetComponent<Renderer>().material.color = Color.red;
-                float sphereRadius = (float)(Math.Log10(individual.AppearanceCount) + 1) * Settings.scaleFactor;
+                float sphereRadius = (float)(Math.Log10(individual.AppearanceCount) + 1) * Settings.ScaleFactor;
                 individualSpheres[individualCount].transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius);
 
                 individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = individual.GivenName + " " + individual.Surname + (!string.IsNullOrEmpty(individual.Suffix) ? "\r\n" + individual.Suffix : "") + "\r\n" + GenerateBirthDeathDate(individual);
                 if (sphereRadius > 1)
                     individualSpheres[individualCount].transform.GetChild(1).transform.localScale = new Vector3(1f / sphereRadius, 1f / sphereRadius, 1f / sphereRadius);
                 individualSpheres[individualCount].tag = "Individual";
+                individualSpheres[individualCount].GetComponent<IndividualSphere>().individualId = individual.Id;
 
-            angle += angleDelta;
-			}
+                angle += angleDelta;
+            }
             individualCount++;
         }
 
         //Update lines
-        
+
         foreach (AncestorIndividual individual in ancestors.Values)
         {
             if (individual.FatherId != null && ancestors.ContainsKey(individual.FatherId))
@@ -243,14 +258,32 @@ public class AncestryWeb : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update () {
+    void Update()
+    {
 
     }
 
     void Start()
     {
-        InitialiseAncestors(GedcomFilename);
-        CreateAncestorObjects();
+
     }
-    
+
+    void OnGUI()
+    {
+        if (ancestryState == AncestryState.Settings)
+        {
+            if (settingsScreen.draw())
+            {
+                ancestryState = AncestryState.Loading;
+            }
+
+        }
+        else if (ancestryState == AncestryState.Loading)
+        {
+            loader.draw();
+            InitialiseAncestors(GedcomFilename);
+            CreateAncestorObjects();
+            ancestryState = AncestryState.Main;
+        }
+    }
 }
