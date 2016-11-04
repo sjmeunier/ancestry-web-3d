@@ -66,7 +66,7 @@ public class AncestryWeb : MonoBehaviour
 
             if (!string.IsNullOrEmpty(childId))
             {
-                string childParentKey = spouseId == null ? "none" : spouseId;
+                string childParentKey = string.IsNullOrEmpty(spouseId) ? "none" : spouseId;
                 HashSet<string> children;
                 if (!individual.ChildrenIds.ContainsKey(childParentKey)) {
                     children = new HashSet<string>();
@@ -299,7 +299,10 @@ public class AncestryWeb : MonoBehaviour
                 float sphereRadius = (float)(Math.Log10(individual.AppearanceCount) + 1) * Settings.ScaleFactor;
                 individualSpheres[individualCount].transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius);
 
-                individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = individual.GivenName + " " + individual.Surname + (!string.IsNullOrEmpty(individual.Suffix) ? "\r\n" + individual.Suffix : "") + "\r\n" + GenerateBirthDeathDate(individual, true);
+                if (Settings.ShowNames)
+                    individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = individual.GivenName + " " + individual.Surname + (!string.IsNullOrEmpty(individual.Suffix) ? "\r\n" + individual.Suffix : "") + "\r\n" + GenerateBirthDeathDate(individual, true);
+                else
+                    individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = "";
                 if (sphereRadius > 1)
                     individualSpheres[individualCount].transform.GetChild(1).transform.localScale = new Vector3(1f / sphereRadius, 1f / sphereRadius, 1f / sphereRadius);
                 individualSpheres[individualCount].tag = "Individual";
@@ -436,6 +439,16 @@ public class AncestryWeb : MonoBehaviour
                         {
                             summary += "\r\n  - " + childSummary; 
                         }
+                    }
+                }
+
+                if (selectedIndividual.Value.SummaryChildren.ContainsKey("none"))
+                {
+                    summary += "\r\n\r\nSpouse: Unknown";
+                    summary += "\r\n  Children:";
+                    foreach (string childSummary in selectedIndividual.Value.SummaryChildren["none"])
+                    {
+                        summary += "\r\n  - " + childSummary;
                     }
                 }
                 GUILayout.BeginArea(new Rect(10f, 10f, Screen.width * 0.3f, Screen.height * 0.5f));
