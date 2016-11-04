@@ -50,6 +50,9 @@ public class SettingsScreen {
         Settings.ShowMarriageLines = GUILayout.Toggle(Settings.ShowMarriageLines, "Draw Marriage Lines");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
+        Settings.ShowNames = GUILayout.Toggle(Settings.ShowNames, "Draw Names");
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
         bool buttonClicked = GUILayout.Button("Load");
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();

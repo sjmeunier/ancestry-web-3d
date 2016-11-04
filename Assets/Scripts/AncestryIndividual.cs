@@ -17,12 +17,23 @@ namespace Assets
         public string DiedDate;
         public string FatherId;
         public string MotherId;
-        public string SpouseId;
+        public HashSet<string> SpouseIds;
+        public Dictionary<string, HashSet<string>> ChildrenIds;
+        public string BirthPlace;
+        public string DiedPlace;
+
         public int LowestGeneration;
         public int HighestGeneration;
         public int AppearanceCount;
-        public HashSet<string> ChildrenIds;
 		public long AhnentafelNumber;
+
+        public string SummaryName;
+        public string SummaryBirthdate;
+        public string SummaryDeathDate;
+        public Dictionary<string, string> SummarySpouse;
+        public Dictionary<string, HashSet<string>> SummaryChildren;
+        public string SummaryFatherName;
+        public string SummaryMotherName;
 
         public AncestorIndividual(string id)
         {
@@ -34,15 +45,25 @@ namespace Assets
             Sex = "";
             BirthDate = "";
             DiedDate = "";
+            BirthPlace = "";
+            DiedPlace = "";
             FatherId = "";
             MotherId = "";
-            SpouseId = "";
+            SpouseIds = new HashSet<string>();
             LowestGeneration = 0;
             HighestGeneration = 0;
             AppearanceCount = 0;
-            ChildrenIds = new HashSet<string>();
+            ChildrenIds = new Dictionary<string, HashSet<string>>();
 
             AhnentafelNumber = 0;
+
+            SummaryName = "";
+            SummaryFatherName = "";
+            SummaryMotherName = "";
+            SummaryBirthdate = "";
+            SummaryDeathDate = "";
+            SummarySpouse = new Dictionary<string, string>();
+            SummaryChildren = new Dictionary<string, HashSet<string>>();
         }
     }
 
