@@ -7,19 +7,26 @@ public class FileBrowserSelector : MonoBehaviour {
 	public Texture2D file,folder,back,drive;
 	
 	//initialize file browser
-	FileBrowser fb = new FileBrowser();
+	FileBrowser fb;
 
 
     bool fileSelected = false;
 
     void Start () {
-		fb.fileTexture = file; 
+        Settings.LoadSettings();
+
+        if (string.IsNullOrEmpty(Settings.CurrentFolder))
+            fb = new FileBrowser();
+        else
+            fb = new FileBrowser(Settings.CurrentFolder);
+
+        fb.fileTexture = file; 
 		fb.directoryTexture = folder;
 		fb.backTexture = back;
 		fb.driveTexture = drive;
 		fb.showSearch = true;
 		fb.searchRecursively = true;
-	}
+    }
 	
 	void OnGUI(){
         if (fileSelected)
@@ -37,9 +44,12 @@ public class FileBrowserSelector : MonoBehaviour {
                 else
                 {
                     AncestryWeb.GedcomFilename = fb.outputFile.FullName;
+                    Settings.CurrentFolder = fb.outputFile.Directory.FullName;
+                    Settings.SaveSettings();
                     fileSelected = true;
                 }
             }
         }
 	}
+
 }

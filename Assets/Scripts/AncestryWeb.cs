@@ -330,8 +330,13 @@ public class AncestryWeb : MonoBehaviour
                 individualSpheres[individualCount].GetComponent<IndividualSphere>().individualId = individual.Id;
 
                 angle += angleDelta;
+                individualCount++;
             }
-            individualCount++;
+
+            //Create fog plane
+            GameObject fogPlane = (GameObject)Instantiate(Resources.Load("FogPlane"), new Vector3(-500f, ((i * 8) + 4) * Settings.ScaleFactor, -500f), Quaternion.identity);
+            fogPlane.tag = "FogPlane";
+
         }
 
         //Update lines

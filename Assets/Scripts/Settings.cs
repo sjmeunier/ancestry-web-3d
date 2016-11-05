@@ -11,6 +11,8 @@ public class Settings : MonoBehaviour
     public static bool ShowNames = true;
     public static float ScaleFactor = 1f;
 
+    public static string CurrentFolder = "";
+
     private static string saveFileName = "settings.dat";
 
     public static void SaveSettings()
@@ -22,6 +24,7 @@ public class Settings : MonoBehaviour
             writer.Write(ShowDescentLines);
             writer.Write(ShowMarriageLines);
             writer.Write(ShowNames);
+            writer.Write(CurrentFolder);
         }
     }
 
@@ -36,6 +39,7 @@ public class Settings : MonoBehaviour
                 ShowDescentLines = reader.ReadBoolean();
                 ShowMarriageLines = reader.ReadBoolean();
                 ShowNames = reader.ReadBoolean();
+                CurrentFolder = reader.ReadString();
             }
         }
     }
