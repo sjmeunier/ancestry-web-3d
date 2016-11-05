@@ -333,10 +333,6 @@ public class AncestryWeb : MonoBehaviour
                 individualCount++;
             }
 
-            //Create fog plane
-            GameObject fogPlane = (GameObject)Instantiate(Resources.Load("FogPlane"), new Vector3(-500f, ((i * 8) + 4) * Settings.ScaleFactor, -500f), Quaternion.identity);
-            fogPlane.tag = "FogPlane";
-
         }
 
         //Update lines
@@ -457,6 +453,15 @@ public class AncestryWeb : MonoBehaviour
         ParseGedcom();
     }
 
+    private IEnumerator InitMain()
+    {
+        yield return new WaitForSeconds(1);
+        InitialiseAncestors();
+        CreateAncestorObjects();
+        ancestryState = AncestryState.Main;
+        StopCoroutine("InitMain");
+    }
+
     void OnGUI()
     {
         if (ancestryState == AncestryState.Settings)
@@ -465,21 +470,13 @@ public class AncestryWeb : MonoBehaviour
             {
                 Settings.SaveSettings();
                 ancestryState = AncestryState.Loading;
-                delayFlag = true;
             }
 
         }
         else if (ancestryState == AncestryState.Loading)
         {
             loader.draw();
-            
-            if (delayFlag == false)
-            {
-                InitialiseAncestors();
-                CreateAncestorObjects();
-                ancestryState = AncestryState.Main;
-            }
-            delayFlag = false;
+            StartCoroutine("InitMain");
         }
         else if (ancestryState == AncestryState.Main)
         {
