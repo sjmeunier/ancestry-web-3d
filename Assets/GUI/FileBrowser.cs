@@ -19,7 +19,7 @@ public class FileBrowser{
 	public Color selectedColor = new Color(0.5f,0.5f,0.9f); //the color of the selected file
 	public bool isVisible{	get{	return visible;	}	} //check if the file browser is currently visible
 	//File Options
-	public string searchPattern = "*"; //search pattern used to find files
+	public string searchPattern = "*.ged"; //search pattern used to find files
 	//Output
 	public FileInfo outputFile; //the selected output file
 	//Search

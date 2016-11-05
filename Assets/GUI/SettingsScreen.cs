@@ -40,6 +40,10 @@ public class SettingsScreen {
         Settings.RootIndividualId = GUILayout.TextField(Settings.RootIndividualId);
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
+        GUILayout.Label("");
+        GUILayout.Label(AncestryWeb.GenerateName("@" + Settings.RootIndividualId + "@"));
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
         GUILayout.Label("Max Generations");
         Settings.MaxDepth = Int32.Parse(GUILayout.TextField(Settings.MaxDepth.ToString()));
         GUILayout.EndHorizontal();

@@ -27,34 +27,35 @@ public class DrawLines : MonoBehaviour
         CreateLineMaterial();
         lineMaterial.SetPass(0);
 
-        GL.Begin(GL.LINES);
-
-        if (Settings.ShowDescentLines)
+        if (AncestryWeb.ancestryState == AncestryWeb.AncestryState.Main)
         {
-            GL.Color(new Color(0.25f, 0.25f, 0.75f, 1f));
-            foreach (var line in AncestryWeb.decentMaleLineVectors)
+            GL.Begin(GL.LINES);
+            if (Settings.ShowDescentLines)
             {
-                GL.Vertex3(line[0].x, line[0].y, line[0].z);
-                GL.Vertex3(line[1].x, line[1].y, line[1].z);
-            };
+                GL.Color(new Color(0.25f, 0.25f, 0.75f, 1f));
+                foreach (var line in AncestryWeb.decentMaleLineVectors)
+                {
+                    GL.Vertex3(line[0].x, line[0].y, line[0].z);
+                    GL.Vertex3(line[1].x, line[1].y, line[1].z);
+                };
 
-            GL.Color(new Color(0.75f, 0.25f, 0.25f, 1f));
-            foreach (var line in AncestryWeb.decentFemaleLineVectors)
+                GL.Color(new Color(0.75f, 0.25f, 0.25f, 1f));
+                foreach (var line in AncestryWeb.decentFemaleLineVectors)
+                {
+                    GL.Vertex3(line[0].x, line[0].y, line[0].z);
+                    GL.Vertex3(line[1].x, line[1].y, line[1].z);
+                };
+            }
+            if (Settings.ShowMarriageLines)
             {
-                GL.Vertex3(line[0].x, line[0].y, line[0].z);
-                GL.Vertex3(line[1].x, line[1].y, line[1].z);
-            };
+                GL.Color(new Color(0.25f, 0.75f, 0.25f, 1f));
+                foreach (var line in AncestryWeb.marriageLineVectors)
+                {
+                    GL.Vertex3(line[0].x, line[0].y, line[0].z);
+                    GL.Vertex3(line[1].x, line[1].y, line[1].z);
+                };
+            }
+            GL.End();
         }
-        if (Settings.ShowMarriageLines)
-        {
-            GL.Color(new Color(0.25f, 0.75f, 0.25f, 1f));
-            foreach (var line in AncestryWeb.marriageLineVectors)
-            {
-                GL.Vertex3(line[0].x, line[0].y, line[0].z);
-                GL.Vertex3(line[1].x, line[1].y, line[1].z);
-            };
-        }
-
-        GL.End();
     }
 }

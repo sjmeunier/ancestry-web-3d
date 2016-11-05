@@ -17,8 +17,6 @@ namespace Assets
         public string DiedDate;
         public string FatherId;
         public string MotherId;
-        public HashSet<string> SpouseIds;
-        public Dictionary<string, HashSet<string>> ChildrenIds;
         public string BirthPlace;
         public string DiedPlace;
 
@@ -28,9 +26,10 @@ namespace Assets
 		public long AhnentafelNumber;
 
         public string SummaryName;
-        public string SummaryBirthdate;
+        public string SummaryBirthDate;
         public string SummaryDeathDate;
         public Dictionary<string, string> SummarySpouse;
+        public Dictionary<string, string> SummaryMarriage;
         public Dictionary<string, HashSet<string>> SummaryChildren;
         public string SummaryFatherName;
         public string SummaryMotherName;
@@ -49,20 +48,19 @@ namespace Assets
             DiedPlace = "";
             FatherId = "";
             MotherId = "";
-            SpouseIds = new HashSet<string>();
             LowestGeneration = 0;
             HighestGeneration = 0;
             AppearanceCount = 0;
-            ChildrenIds = new Dictionary<string, HashSet<string>>();
 
             AhnentafelNumber = 0;
 
             SummaryName = "";
             SummaryFatherName = "";
             SummaryMotherName = "";
-            SummaryBirthdate = "";
+            SummaryBirthDate = "";
             SummaryDeathDate = "";
             SummarySpouse = new Dictionary<string, string>();
+            SummaryMarriage = new Dictionary<string, string>();
             SummaryChildren = new Dictionary<string, HashSet<string>>();
         }
     }

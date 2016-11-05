@@ -101,18 +101,24 @@ public class CameraMovement : MonoBehaviour
         {
             transform.Translate(new Vector3(0, 0, keyZoomSpeed * Time.deltaTime));
         }
-
-
-        AncestryWeb.selectedIndividualId = null;
-        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit))
+        if (Input.GetKey(KeyCode.Escape))
         {
-            if (hit.collider.name.Contains("Sphere"))
-            {
-                AncestryWeb.selectedIndividualId = hit.collider.GetComponentInParent<IndividualSphere>().individualId;
-                AncestryWeb.selectedIndividual = AncestryWeb.ancestors[AncestryWeb.selectedIndividualId];
-            }
+            AncestryWeb.ShowSettings();
+        }
 
+        if (!isPanning && !isRotating && !isZooming)
+        {
+            AncestryWeb.selectedIndividualId = null;
+            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.name.Contains("Sphere"))
+                {
+                    AncestryWeb.selectedIndividualId = hit.collider.GetComponentInParent<IndividualSphere>().individualId;
+                    AncestryWeb.selectedIndividual = AncestryWeb.ancestors[AncestryWeb.selectedIndividualId];
+                }
+
+            }
         }
     }
 }

@@ -36,7 +36,6 @@ public class FileBrowserSelector : MonoBehaviour {
                 }
                 else
                 {
-                    Debug.Log(fb.outputFile.FullName);
                     AncestryWeb.GedcomFilename = fb.outputFile.FullName;
                     fileSelected = true;
                 }

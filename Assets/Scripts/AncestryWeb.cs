@@ -21,13 +21,15 @@ public class AncestryWeb : MonoBehaviour
     private Dictionary<int, List<AncestorIndividual>> optimizedAncestors = new Dictionary<int, List<AncestorIndividual>>();
     private Dictionary<int, int> ancestorGenerationCount = new Dictionary<int, int>();
     private GameObject[] individualSpheres;
-    private Dictionary<string, GedcomIndividual> gedcomIndividuals;
-    private Dictionary<string, GedcomFamily> gedcomFamilies;
+    private static Dictionary<string, GedcomIndividual> gedcomIndividuals;
+    private static Dictionary<string, GedcomFamily> gedcomFamilies;
 
     Loader loader = new Loader();
     SettingsScreen settingsScreen = new SettingsScreen();
 
     private int highestDepth = 0;
+
+    private bool delayFlag = false;
 
     public enum AncestryState
     {
@@ -36,11 +38,11 @@ public class AncestryWeb : MonoBehaviour
         Main
     }
 
-    private void ProcessAncestor(string individualId, string spouseId, string childId, long ahnentafelNumber, int depth)
+    private void ProcessAncestor(string individualId, string childId, long ahnentafelNumber, int depth)
     {
         if (ancestors.ContainsKey(individualId))
         {
-            IncrementAppearance(individualId, spouseId, childId, ahnentafelNumber, depth);
+            IncrementAppearance(individualId, childId, ahnentafelNumber, depth);
         }
         else
         {
@@ -64,24 +66,6 @@ public class AncestryWeb : MonoBehaviour
 
             individual.AhnentafelNumber = ahnentafelNumber;
 
-            if (!string.IsNullOrEmpty(childId))
-            {
-                string childParentKey = string.IsNullOrEmpty(spouseId) ? "none" : spouseId;
-                HashSet<string> children;
-                if (!individual.ChildrenIds.ContainsKey(childParentKey)) {
-                    children = new HashSet<string>();
-                    children.Add(childId);
-                    individual.ChildrenIds.Add(childParentKey, children);
-                }
-                else
-                {
-                    children = individual.ChildrenIds[childParentKey];
-                    children.Add(childId);
-                    individual.ChildrenIds[childParentKey] = children;
-                }
-         
-            }
-
             GedcomFamily? gedcomFamily = null;
             foreach (GedcomFamily family in gedcomFamilies.Values)
             {
@@ -96,21 +80,20 @@ public class AncestryWeb : MonoBehaviour
                 individual.FatherId = gedcomFamily.Value.HusbandId;
                 individual.MotherId = gedcomFamily.Value.WifeId;
             }
-            individual.SpouseIds.Add(spouseId);
 
             ancestors.Add(individualId, individual);
             if (depth <= Settings.MaxDepth)
             {
                 if (!string.IsNullOrEmpty(individual.FatherId))
-                    ProcessAncestor(individual.FatherId, individual.MotherId, individualId, 2 * ahnentafelNumber, depth + 1);
+                    ProcessAncestor(individual.FatherId, individualId, 2 * ahnentafelNumber, depth + 1);
 
                 if (!string.IsNullOrEmpty(individual.MotherId))
-                    ProcessAncestor(individual.MotherId, individual.FatherId, individualId, 2 * ahnentafelNumber + 1, depth + 1);
+                    ProcessAncestor(individual.MotherId, individualId, 2 * ahnentafelNumber + 1, depth + 1);
             }
         }
     }
 
-    private void IncrementAppearance(string individualId, string spouseId, string childId, long ahnentafelNumber, int depth)
+    private void IncrementAppearance(string individualId, string childId, long ahnentafelNumber, int depth)
     {
         if (ancestors.ContainsKey(individualId))
         {
@@ -124,33 +107,13 @@ public class AncestryWeb : MonoBehaviour
             }
             individual.AppearanceCount++;
 
-
-            if (!string.IsNullOrEmpty(childId))
-            {
-                string childParentKey = spouseId == null ? "none" : spouseId;
-                HashSet<string> children;
-                if (!individual.ChildrenIds.ContainsKey(childParentKey))
-                {
-                    children = new HashSet<string>();
-                    children.Add(childId);
-                    individual.ChildrenIds.Add(childParentKey, children);
-                }
-                else
-                {
-                    children = individual.ChildrenIds[childParentKey];
-                    children.Add(childId);
-                    individual.ChildrenIds[childParentKey] = children;
-                }
-
-            }
-
             ancestors[individualId] = individual;
 
             if (!string.IsNullOrEmpty(individual.FatherId))
-                IncrementAppearance(individual.FatherId, individual.MotherId, individualId, 2 * ahnentafelNumber, depth + 1);
+                IncrementAppearance(individual.FatherId, individualId, 2 * ahnentafelNumber, depth + 1);
 
             if (!string.IsNullOrEmpty(individual.MotherId))
-                IncrementAppearance(individual.MotherId, individual.FatherId, individualId, 2 * ahnentafelNumber + 1, depth + 1);
+                IncrementAppearance(individual.MotherId, individualId, 2 * ahnentafelNumber + 1, depth + 1);
 
         }
     }
@@ -177,6 +140,8 @@ public class AncestryWeb : MonoBehaviour
             AncestorIndividual individual = ancestors[individualId];
            
             individual.SummaryName = individual.GivenName;
+            if (!string.IsNullOrEmpty(individual.Prefix))
+                individual.SummaryName += " " + individual.Prefix;
             if (!string.IsNullOrEmpty(individual.Surname))
                 individual.SummaryName += " " + individual.Surname;
             if (!string.IsNullOrEmpty(individual.Suffix))
@@ -184,85 +149,130 @@ public class AncestryWeb : MonoBehaviour
 
             string born = ProcessDate(individual.BirthDate, false);
             if (born != "?" || !string.IsNullOrEmpty(individual.BirthPlace.Trim()))
-                individual.SummaryBirthdate = string.Format("b. {0} {1}", born, individual.BirthPlace).Trim();
+                individual.SummaryBirthDate = string.Format("b. {0} {1}", born, individual.BirthPlace).Trim();
             string died = ProcessDate(individual.DiedDate, false);
             if (died != "?" || !string.IsNullOrEmpty(individual.DiedPlace.Trim()))
                 individual.SummaryDeathDate = string.Format("d. {0} {1}", died, individual.DiedPlace).Trim();
 
 
-            if (!string.IsNullOrEmpty(individual.FatherId) && ancestors.ContainsKey(individual.FatherId))
+            if (!string.IsNullOrEmpty(individual.FatherId) && gedcomIndividuals.ContainsKey(individual.FatherId))
             {
-                AncestorIndividual father = ancestors[individual.FatherId];
+                GedcomIndividual father = gedcomIndividuals[individual.FatherId];
                 individual.SummaryFatherName = father.GivenName;
+                if (!string.IsNullOrEmpty(father.Prefix))
+                    individual.SummaryFatherName += " " + father.Prefix;
                 if (!string.IsNullOrEmpty(father.Surname))
                     individual.SummaryFatherName += " " + father.Surname;
                 if (!string.IsNullOrEmpty(father.Suffix))
                     individual.SummaryFatherName += " (" + father.Suffix + ")";
                 individual.SummaryFatherName += " " + GenerateBirthDeathDate(father, true);
+            } else
+            {
+                individual.SummaryFatherName = "Unknown";
             }
 
-            if (!string.IsNullOrEmpty(individual.MotherId) && ancestors.ContainsKey(individual.MotherId))
+            if (!string.IsNullOrEmpty(individual.MotherId) && gedcomIndividuals.ContainsKey(individual.MotherId))
             {
-                AncestorIndividual mother = ancestors[individual.MotherId];
+                GedcomIndividual mother = gedcomIndividuals[individual.MotherId];
                 individual.SummaryMotherName = mother.GivenName;
+                if (!string.IsNullOrEmpty(mother.Prefix))
+                    individual.SummaryMotherName += " " + mother.Prefix;
                 if (!string.IsNullOrEmpty(mother.Surname))
                     individual.SummaryMotherName += " " + mother.Surname;
                 if (!string.IsNullOrEmpty(mother.Suffix))
                     individual.SummaryMotherName += " (" + mother.Suffix + ")";
                 individual.SummaryMotherName += " " + GenerateBirthDeathDate(mother, true);
             }
-
-            foreach(string spouseId in individual.SpouseIds)
+            else
             {
-                if (!ancestors.ContainsKey(spouseId))
-                    continue;
+                individual.SummaryMotherName = "Unknown";
+            }
 
-                AncestorIndividual spouse = ancestors[spouseId];
-                string summary = spouse.GivenName;
-                if (!string.IsNullOrEmpty(spouse.Surname))
-                    summary += " " + spouse.Surname;
-                if (!string.IsNullOrEmpty(spouse.Suffix))
-                    summary += " (" + spouse.Suffix + ")";
-                summary += " " + GenerateBirthDeathDate(spouse, true);
-                individual.SummarySpouse.Add(spouseId, summary);
-
-                if (individual.ChildrenIds.ContainsKey(spouseId))
+            foreach (GedcomFamily family in gedcomFamilies.Values.Where(x => x.WifeId == individual.Id || x.HusbandId == individual.Id))
+            {
+                string spouseId = (family.WifeId == individual.Id) ? family.HusbandId : family.WifeId;
+                if (gedcomIndividuals.ContainsKey(spouseId)) {
+                    GedcomIndividual spouse = gedcomIndividuals[spouseId];
+                    string summary = spouse.GivenName;
+                    if (!string.IsNullOrEmpty(spouse.Prefix))
+                        summary += " " + spouse.Prefix;
+                    if (!string.IsNullOrEmpty(spouse.Surname))
+                        summary += " " + spouse.Surname;
+                    if (!string.IsNullOrEmpty(spouse.Suffix))
+                        summary += " (" + spouse.Suffix + ")";
+                    summary += " " + GenerateBirthDeathDate(spouse, true);
+                    individual.SummarySpouse.Add(family.Id, summary);
+                } else
                 {
-                    HashSet<string> childSummaries = new HashSet<string>();
-                    foreach(string childId in individual.ChildrenIds[spouseId])
-                    {
-                        if (!ancestors.ContainsKey(childId))
-                            continue;
-
-                        AncestorIndividual child = ancestors[childId];
-                        summary = child.GivenName;
-                        if (!string.IsNullOrEmpty(child.Surname))
-                            summary += " " + child.Surname;
-                        if (!string.IsNullOrEmpty(child.Suffix))
-                            summary += " (" + child.Suffix + ")";
-                        summary += " " + GenerateBirthDeathDate(child, true);
-                        childSummaries.Add(summary);
-                    }
-                    individual.SummaryChildren.Add(spouseId, childSummaries);
+                    individual.SummarySpouse.Add(family.Id, "Unknown");
                 }
+
+                string married = ProcessDate(family.MarriageDate, false);
+                if (married != "?" || !string.IsNullOrEmpty(family.MarriagePlace.Trim()))
+                    individual.SummaryMarriage.Add(family.Id, string.Format("m. {0} {1}", married, family.MarriagePlace).Trim());
+
+                HashSet<string> childSummaries = new HashSet<string>();
+                foreach (string childId in family.Children)
+                {
+                    if (!gedcomIndividuals.ContainsKey(childId))
+                        continue;
+
+                    GedcomIndividual child = gedcomIndividuals[childId];
+                    string summary = child.GivenName;
+                    if (!string.IsNullOrEmpty(child.Prefix))
+                        summary += " " + child.Prefix;
+                    if (!string.IsNullOrEmpty(child.Surname))
+                        summary += " " + child.Surname;
+                    if (!string.IsNullOrEmpty(child.Suffix))
+                        summary += " (" + child.Suffix + ")";
+                    summary += " " + GenerateBirthDeathDate(child, true);
+                    childSummaries.Add(summary);
+                }
+                individual.SummaryChildren.Add(family.Id, childSummaries);
             }
 
             ancestors[individualId] = individual;
         }
     }
-    private void InitialiseAncestors(string filename)
+
+    private void ParseGedcom()
     {
         GedcomParser parser = new GedcomParser();
-        parser.Parse(filename);
+        parser.Parse(AncestryWeb.GedcomFilename);
         gedcomFamilies = parser.gedcomFamilies;
         gedcomIndividuals = parser.gedcomIndividuals;
+    }
+    private void InitialiseAncestors()
+    {
+        ancestors = new Dictionary<string, AncestorIndividual>();
+        ancestorPositions = new Dictionary<string, Vector3>();
+        decentMaleLineVectors = new List<Vector3[]>();
+        decentFemaleLineVectors = new List<Vector3[]>();
+        marriageLineVectors = new List<Vector3[]>();
+        optimizedAncestors = new Dictionary<int, List<AncestorIndividual>>();
+        ancestorGenerationCount = new Dictionary<int, int>();
 
-        ProcessAncestor("@" + Settings.RootIndividualId + "@", string.Empty, string.Empty, 1, 0);
+        ProcessAncestor("@" + Settings.RootIndividualId + "@", string.Empty, 1, 0);
         CalculateSummaryData();
         CalculateAncestorCountPerGenerationDictionary();
 
     }
 
+    public static string GenerateName(string individualId)
+    {
+        if (!gedcomIndividuals.ContainsKey(individualId))
+            return string.Empty;
+
+        GedcomIndividual individual = gedcomIndividuals[individualId];
+        string name = individual.GivenName;
+        if (!string.IsNullOrEmpty(individual.Prefix))
+            name += " " + individual.Prefix;
+        if (!string.IsNullOrEmpty(individual.Surname))
+            name += " " + individual.Surname;
+        if (!string.IsNullOrEmpty(individual.Suffix))
+            name += " (" + individual.Suffix + ")";
+        return name;
+    }
     private void CreateAncestorObjects()
     {
         individualSpheres = new GameObject[ancestors.Count()];
@@ -300,7 +310,18 @@ public class AncestryWeb : MonoBehaviour
                 individualSpheres[individualCount].transform.localScale = new Vector3(sphereRadius, sphereRadius, sphereRadius);
 
                 if (Settings.ShowNames)
-                    individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = individual.GivenName + " " + individual.Surname + (!string.IsNullOrEmpty(individual.Suffix) ? "\r\n" + individual.Suffix : "") + "\r\n" + GenerateBirthDeathDate(individual, true);
+                {
+                    string name = individual.GivenName;
+                    if (!string.IsNullOrEmpty(individual.Prefix))
+                        name += " " + individual.Prefix;
+                    if (!string.IsNullOrEmpty(individual.Surname))
+                        name += " " + individual.Surname;
+                    if (!string.IsNullOrEmpty(individual.Suffix))
+                        name += "\r\n" + individual.Suffix;
+
+                    individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = name + "\r\n" + GenerateBirthDeathDate(individual, true);
+
+                }
                 else
                     individualSpheres[individualCount].transform.GetChild(1).GetComponent<TextMesh>().text = "";
                 if (sphereRadius > 1)
@@ -325,14 +346,15 @@ public class AncestryWeb : MonoBehaviour
             {
                 decentFemaleLineVectors.Add(new Vector3[2] { AncestryWeb.ancestorPositions[individual.Id], AncestryWeb.ancestorPositions[individual.MotherId] });
             }
-            foreach (string spouseId in individual.SpouseIds)
-            {
-                if (spouseId != null && ancestors.ContainsKey(spouseId))
-                {
-                    marriageLineVectors.Add(new Vector3[2] { AncestryWeb.ancestorPositions[individual.Id], AncestryWeb.ancestorPositions[spouseId] });
-                }
-            }
         };
+
+        foreach (GedcomFamily family in gedcomFamilies.Values)
+        {
+            if (!string.IsNullOrEmpty(family.HusbandId) && ancestors.ContainsKey(family.HusbandId) && !string.IsNullOrEmpty(family.WifeId) && ancestors.ContainsKey(family.WifeId))
+            {
+                marriageLineVectors.Add(new Vector3[2] { AncestryWeb.ancestorPositions[family.HusbandId], AncestryWeb.ancestorPositions[family.WifeId] });
+            }
+        }
     }
 
     private string ProcessDate(string date, bool onlyYear)
@@ -360,7 +382,8 @@ public class AncestryWeb : MonoBehaviour
                     int year = 0;
                     Int32.TryParse(dateArr[dateArr.Length - 1], out year);
                 }
-            } else
+            }
+            else
             {
                 if (date.Contains("ABT"))
                     date = date.Replace("ABT", "c");
@@ -368,6 +391,9 @@ public class AncestryWeb : MonoBehaviour
                     date = date.Replace("AFT", ">");
                 else if (date.Contains("BEF"))
                     date = date.Replace("BEF", "<");
+
+                date = date.Replace("JAN", "Jan").Replace("FEB", "Feb").Replace("MAR", "Mar").Replace("APR", "Apr").Replace("MAY", "May").Replace("JUN", "Jun")
+                            .Replace("JUL", "Jul").Replace("AUG", "Aug").Replace("SEP", "Sep").Replace("OCT", "Oct").Replace("NOV", "Nov").Replace("DEC", "Dec");
             }
         }
 
@@ -390,6 +416,30 @@ public class AncestryWeb : MonoBehaviour
         return string.Empty;
     }
 
+    private string GenerateBirthDeathDate(GedcomIndividual individual, bool onlyYear)
+    {
+        string born = ProcessDate(individual.BirthDate, onlyYear);
+        string died = ProcessDate(individual.DiedDate, onlyYear);
+        if (born != "?" || died != "?")
+        {
+            if (born == "?")
+                return string.Format("(d.{0})", died);
+            else if (died == "?")
+                return string.Format("(b.{0})", born);
+            else
+                return string.Format("(b.{0}, d.{1})", born, died);
+        }
+        return string.Empty;
+    }
+
+    public static void ShowSettings()
+    {
+        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
+            GameObject.DestroyImmediate(individualSphere);
+        
+        ancestryState = AncestryState.Settings;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -398,7 +448,8 @@ public class AncestryWeb : MonoBehaviour
 
     void Start()
     {
-
+        Settings.LoadSettings();
+        ParseGedcom();
     }
 
     void OnGUI()
@@ -407,16 +458,23 @@ public class AncestryWeb : MonoBehaviour
         {
             if (settingsScreen.draw())
             {
+                Settings.SaveSettings();
                 ancestryState = AncestryState.Loading;
+                delayFlag = true;
             }
 
         }
         else if (ancestryState == AncestryState.Loading)
         {
             loader.draw();
-            InitialiseAncestors(GedcomFilename);
-            CreateAncestorObjects();
-            ancestryState = AncestryState.Main;
+            
+            if (delayFlag == false)
+            {
+                InitialiseAncestors();
+                CreateAncestorObjects();
+                ancestryState = AncestryState.Main;
+            }
+            delayFlag = false;
         }
         else if (ancestryState == AncestryState.Main)
         {
@@ -424,7 +482,7 @@ public class AncestryWeb : MonoBehaviour
             {
 
                 string summary = selectedIndividual.Value.SummaryName + "\r\n" +
-                        selectedIndividual.Value.SummaryBirthdate + "\r\n" +
+                        selectedIndividual.Value.SummaryBirthDate + "\r\n" +
                         selectedIndividual.Value.SummaryDeathDate + "\r\n\r\n" +
                         "Father: " + selectedIndividual.Value.SummaryFatherName + "\r\n" +
                         "Mother: " + selectedIndividual.Value.SummaryMotherName;
@@ -432,7 +490,10 @@ public class AncestryWeb : MonoBehaviour
                 foreach(KeyValuePair<string,string> spouseSummary in selectedIndividual.Value.SummarySpouse)
                 {
                     summary += "\r\n\r\nSpouse: " + spouseSummary.Value;
-
+                    if (selectedIndividual.Value.SummaryMarriage.ContainsKey(spouseSummary.Key))
+                    {
+                        summary += "\r\n" + selectedIndividual.Value.SummaryMarriage[spouseSummary.Key];
+                    }
                     if (selectedIndividual.Value.SummaryChildren.ContainsKey(spouseSummary.Key)) {
                         summary += "\r\n  Children:";
                         foreach (string childSummary in selectedIndividual.Value.SummaryChildren[spouseSummary.Key])
@@ -442,16 +503,7 @@ public class AncestryWeb : MonoBehaviour
                     }
                 }
 
-                if (selectedIndividual.Value.SummaryChildren.ContainsKey("none"))
-                {
-                    summary += "\r\n\r\nSpouse: Unknown";
-                    summary += "\r\n  Children:";
-                    foreach (string childSummary in selectedIndividual.Value.SummaryChildren["none"])
-                    {
-                        summary += "\r\n  - " + childSummary;
-                    }
-                }
-                GUILayout.BeginArea(new Rect(10f, 10f, Screen.width * 0.3f, Screen.height * 0.5f));
+                GUILayout.BeginArea(new Rect(10f, 10f, Screen.width * 0.3f, Screen.height - 20f));
                 GUILayout.BeginVertical("box");
                 GUILayout.Label(summary);
                 GUILayout.EndVertical();

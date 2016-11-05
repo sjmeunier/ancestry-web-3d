@@ -173,6 +173,9 @@ namespace GedcomLib
                         currentGedcomIndividual.Sources.Add(lineArray[2]);
                         currentSubRecord = GedcomSubRecordEnum.None;
                         break;
+                    default:
+                        currentSubRecord = GedcomSubRecordEnum.None;
+                        break;
                 }
             }
             else if (currentRecord == GedcomRecordEnum.Family)
@@ -202,6 +205,9 @@ namespace GedcomLib
                         currentGedcomFamily.Sources.Add(lineArray[2]);
                         currentSubRecord = GedcomSubRecordEnum.None;
                         break;
+                    default:
+                        currentSubRecord = GedcomSubRecordEnum.None;
+                        break;
                 }
             }
             else if (currentRecord == GedcomRecordEnum.Note)
@@ -216,6 +222,9 @@ namespace GedcomLib
                         currentGedcomNote.Text += lineArray[2];
                         currentSubRecord = GedcomSubRecordEnum.None;
                         break;
+                    default:
+                        currentSubRecord = GedcomSubRecordEnum.None;
+                        break;
                 }
             }
             else if (currentRecord == GedcomRecordEnum.Source)
@@ -228,6 +237,9 @@ namespace GedcomLib
                         break;
                     case "CONT":
                         currentGedcomSource.Text += lineArray[2];
+                        currentSubRecord = GedcomSubRecordEnum.None;
+                        break;
+                    default:
                         currentSubRecord = GedcomSubRecordEnum.None;
                         break;
                 }
