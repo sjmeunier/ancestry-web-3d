@@ -29,8 +29,6 @@ public class AncestryWeb : MonoBehaviour
 
     private int highestDepth = 0;
 
-    private bool delayFlag = false;
-
     public enum AncestryState
     {
         Settings,
