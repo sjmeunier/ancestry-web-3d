@@ -24,6 +24,8 @@ public class AncestryWeb : MonoBehaviour
     private static Dictionary<string, GedcomIndividual> gedcomIndividuals;
     private static Dictionary<string, GedcomFamily> gedcomFamilies;
 
+    private string loadingText = "Loading...";
+
     Loader loader = new Loader();
     SettingsScreen settingsScreen = new SettingsScreen();
 
@@ -151,7 +153,6 @@ public class AncestryWeb : MonoBehaviour
             string died = ProcessDate(individual.DiedDate, false);
             if (died != "?" || !string.IsNullOrEmpty(individual.DiedPlace.Trim()))
                 individual.SummaryDeathDate = string.Format("d. {0} {1}", died, individual.DiedPlace).Trim();
-
 
             if (!string.IsNullOrEmpty(individual.FatherId) && gedcomIndividuals.ContainsKey(individual.FatherId))
             {
@@ -457,7 +458,8 @@ public class AncestryWeb : MonoBehaviour
 
     private IEnumerator InitMain()
     {
-        yield return new WaitForSeconds(1);
+        loadingText = "Initialising ancestors...";
+        yield return new WaitForSeconds(0.25f);
         InitialiseAncestors();
         CreateAncestorObjects();
         ancestryState = AncestryState.Main;
@@ -477,7 +479,7 @@ public class AncestryWeb : MonoBehaviour
         }
         else if (ancestryState == AncestryState.Loading)
         {
-            loader.draw();
+            loader.draw(loadingText);
             StartCoroutine("InitMain");
         }
         else if (ancestryState == AncestryState.Main)
@@ -485,13 +487,17 @@ public class AncestryWeb : MonoBehaviour
             if (selectedIndividualId != null && selectedIndividual.HasValue)
             {
 
-                string summary = selectedIndividual.Value.SummaryName + "\r\n" +
-                        selectedIndividual.Value.SummaryBirthDate + "\r\n" +
-                        selectedIndividual.Value.SummaryDeathDate + "\r\n\r\n" +
-                        "Father: " + selectedIndividual.Value.SummaryFatherName + "\r\n" +
-                        "Mother: " + selectedIndividual.Value.SummaryMotherName;
+                string summary = selectedIndividual.Value.SummaryName + "\r\n";
+                if (!string.IsNullOrEmpty(selectedIndividual.Value.SummaryBirthDate))
+                    summary += "\r\n" + selectedIndividual.Value.SummaryBirthDate;
+                if (!string.IsNullOrEmpty(selectedIndividual.Value.SummaryDeathDate))
+                    summary += "\r\n" + selectedIndividual.Value.SummaryDeathDate;
 
-                foreach(KeyValuePair<string,string> spouseSummary in selectedIndividual.Value.SummarySpouse)
+                summary += "\r\n\r\n" + "Father: " + selectedIndividual.Value.SummaryFatherName;
+                summary += "\r\n" + "Mother: " + selectedIndividual.Value.SummaryMotherName;
+                summary += "\r\n\r\n" + "Lines of Descent: " + selectedIndividual.Value.AppearanceCount.ToString();
+
+                foreach (KeyValuePair<string,string> spouseSummary in selectedIndividual.Value.SummarySpouse)
                 {
                     summary += "\r\n\r\nSpouse: " + spouseSummary.Value;
                     if (selectedIndividual.Value.SummaryMarriage.ContainsKey(spouseSummary.Key))

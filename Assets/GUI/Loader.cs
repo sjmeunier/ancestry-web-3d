@@ -27,7 +27,7 @@ public class Loader {
 	public void setGUIRect(Rect r){	guiSize=r;	}
 	
 	
-	public void draw(){
+	public void draw(string text){
 		if(guiSkin){
 			oldSkin = GUI.skin;
 			GUI.skin = guiSkin;
@@ -36,7 +36,7 @@ public class Loader {
         GUILayout.FlexibleSpace();
         GUILayout.BeginHorizontal("box");
         GUILayout.FlexibleSpace();
-        GUILayout.Label("Loading...");
+        GUILayout.Label(text);
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
         GUILayout.FlexibleSpace();

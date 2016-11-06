@@ -57,6 +57,7 @@ public class SettingsScreen {
         Settings.ShowNames = GUILayout.Toggle(Settings.ShowNames, "Draw Names");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
+        bool exitClicked = GUILayout.Button("Exit");
         bool buttonClicked = GUILayout.Button("Load");
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();
@@ -65,6 +66,8 @@ public class SettingsScreen {
         visible = true;
 		if(guiSkin){GUI.skin = oldSkin;}
 
+        if (exitClicked)
+            Application.Quit();
         return buttonClicked;
 	}
 	
