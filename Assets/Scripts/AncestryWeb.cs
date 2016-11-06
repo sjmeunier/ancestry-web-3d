@@ -236,7 +236,10 @@ public class AncestryWeb : MonoBehaviour
     private void ParseGedcom()
     {
         GedcomParser parser = new GedcomParser();
-        parser.Parse(AncestryWeb.GedcomFilename);
+        if (Settings.WebMode)
+            parser.ParseWeb(Settings.WebURL);
+        else
+            parser.Parse(AncestryWeb.GedcomFilename);
         gedcomFamilies = parser.gedcomFamilies;
         gedcomIndividuals = parser.gedcomIndividuals;
     }
@@ -447,6 +450,7 @@ public class AncestryWeb : MonoBehaviour
 
     void Start()
     {
+        ancestryState = AncestryState.Settings;
         Settings.LoadSettings();
         ParseGedcom();
     }

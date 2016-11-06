@@ -12,7 +12,8 @@ public class Settings : MonoBehaviour
     public static float ScaleFactor = 1f;
 
     public static string CurrentFolder = "";
-
+    public static bool WebMode = true;
+    public static string WebURL = "https://sjmeunier.github.io/AncestryWeb3D_Web/sample.ged";
     private static string saveFileName = "settings.dat";
 
     public static void SaveSettings()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections;
 using System.IO;
+using UnityEngine;
 
 namespace GedcomLib
 {
@@ -20,6 +21,41 @@ namespace GedcomLib
         private GedcomRecordEnum currentRecord = GedcomRecordEnum.None;
         private GedcomSubRecordEnum currentSubRecord = GedcomSubRecordEnum.None;
 
+        public void ParseWeb(string url)
+        {
+            WWW request = new WWW(url);
+
+            while (!request.isDone)
+            {
+               //Waiting
+            }
+
+            string[] lines = request.text.Split(new string[] { "\n" }, StringSplitOptions.None);
+            string line;
+            char[] separators = new char[1] { ' ' };
+            foreach(string linevar in lines)
+            {
+                line = linevar.Replace("'", "''");
+                while (line.IndexOf("  ") > 0)
+                {
+                    line = line.Replace("  ", " ");
+                }
+                string[] lineArray = line.Split(separators, 3);
+                switch (lineArray[0])
+                {
+                    case "0":
+                        ProcessRootLevel(lineArray);
+                        break;
+                    case "1":
+                        ProcessLevel1(lineArray);
+                        break;
+                    case "2":
+                        ProcessLevel2(lineArray);
+                        break;
+                }
+
+            }
+        }
         public void Parse(string filename)
         {
             StreamReader reader = new StreamReader(filename);
