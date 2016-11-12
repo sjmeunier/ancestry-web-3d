@@ -18,6 +18,9 @@ public class Settings : MonoBehaviour
 
     public static void SaveSettings()
     {
+        if (WebMode)
+            return;
+
         using (BinaryWriter writer = new BinaryWriter(new FileStream(saveFileName, FileMode.Create)))
         {
             writer.Write(RootIndividualId);
@@ -31,6 +34,9 @@ public class Settings : MonoBehaviour
 
     public static void LoadSettings()
     {
+        if (WebMode)
+            return;
+
         if (File.Exists(saveFileName))
         {
             using (BinaryReader reader = new BinaryReader(new FileStream(saveFileName, FileMode.Open)))

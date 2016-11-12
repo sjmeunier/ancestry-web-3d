@@ -18,6 +18,7 @@ public class CameraMovement : MonoBehaviour
     private bool isRotating;    // Is the camera being rotated?
     private bool isZooming;     // Is the camera zooming?
 
+    private string previousId = "";
     //
     // UPDATE
     //
@@ -116,6 +117,8 @@ public class CameraMovement : MonoBehaviour
                 {
                     AncestryWeb.selectedIndividualId = hit.collider.GetComponentInParent<IndividualSphere>().individualId;
                     AncestryWeb.selectedIndividual = AncestryWeb.ancestors[AncestryWeb.selectedIndividualId];
+
+                    hit.collider.GetComponentInParent<IndividualSphere>().transform.GetChild(0).GetComponent<Renderer>().material.color = Color.yellow;
                 }
 
             }

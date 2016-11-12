@@ -487,7 +487,9 @@ public class AncestryWeb : MonoBehaviour
             if (selectedIndividualId != null && selectedIndividual.HasValue)
             {
 
-                string summary = selectedIndividual.Value.SummaryName + "\r\n";
+                string summary = selectedIndividual.Value.Id.Replace("@", "") + "\r\n";
+                summary += "Ahnentafel Number: " + selectedIndividual.Value.AhnentafelNumber.ToString() + "\r\n";
+                summary += selectedIndividual.Value.SummaryName + "\r\n";
                 if (!string.IsNullOrEmpty(selectedIndividual.Value.SummaryBirthDate))
                     summary += "\r\n" + selectedIndividual.Value.SummaryBirthDate;
                 if (!string.IsNullOrEmpty(selectedIndividual.Value.SummaryDeathDate))
