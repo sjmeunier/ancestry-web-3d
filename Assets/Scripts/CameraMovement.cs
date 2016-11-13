@@ -109,6 +109,17 @@ public class CameraMovement : MonoBehaviour
 
         if (!isPanning && !isRotating && !isZooming)
         {
+            if (!string.IsNullOrEmpty(AncestryWeb.selectedIndividualId))
+            {
+                foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
+                {
+                    if (AncestryWeb.ancestors[AncestryWeb.selectedIndividualId].Sex == "M")
+                        individualSphere.transform.GetChild(0).GetComponent<Renderer>().material.color = Color.blue;
+                    else
+                        individualSphere.transform.GetChild(0).GetComponent<Renderer>().material.color = Color.red;
+                    individualSphere.tag = "Individual";
+                }
+            }
             AncestryWeb.selectedIndividualId = null;
             ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
@@ -119,6 +130,7 @@ public class CameraMovement : MonoBehaviour
                     AncestryWeb.selectedIndividual = AncestryWeb.ancestors[AncestryWeb.selectedIndividualId];
 
                     hit.collider.GetComponentInParent<IndividualSphere>().transform.GetChild(0).GetComponent<Renderer>().material.color = Color.yellow;
+                    hit.collider.GetComponentInParent<IndividualSphere>().tag = "Highlighted";
                 }
 
             }

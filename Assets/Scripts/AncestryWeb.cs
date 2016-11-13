@@ -439,6 +439,8 @@ public class AncestryWeb : MonoBehaviour
     {
         foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
             GameObject.DestroyImmediate(individualSphere);
+        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
+            GameObject.DestroyImmediate(individualSphere);
         
         ancestryState = AncestryState.Settings;
     }
