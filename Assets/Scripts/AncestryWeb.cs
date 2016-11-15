@@ -474,6 +474,7 @@ public class AncestryWeb : MonoBehaviour
         }
         else if (ancestryState == AncestryState.InitialisingData)
         {
+            loadedObjects = false;
             foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
                 GameObject.DestroyImmediate(individualSphere);
             foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
