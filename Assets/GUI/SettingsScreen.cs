@@ -17,7 +17,11 @@ public class SettingsScreen {
 	protected Rect guiSize;
 	protected GUISkin oldSkin;
 	protected bool visible = false;
-	
+
+    private string oldIndividual = "";
+    private int oldMaxGenerations = 0;
+    private bool oldShowNames = true;
+
 	//Constructors
 	public SettingsScreen(){
         guiSize = new Rect(Screen.width * 0.125f, Screen.height * 0.125f, Screen.width * 0.75f, Screen.height * 0.75f);
@@ -29,6 +33,10 @@ public class SettingsScreen {
 	
 	
 	public bool draw(){
+        oldIndividual = Settings.RootIndividualId;
+        oldMaxGenerations = Settings.MaxDepth;
+        oldShowNames = Settings.ShowNames;
+
 		if(guiSkin){
 			oldSkin = GUI.skin;
 			GUI.skin = guiSkin;
@@ -58,7 +66,7 @@ public class SettingsScreen {
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         bool exitClicked = GUILayout.Button("Exit");
-        bool buttonClicked = GUILayout.Button("Load");
+        bool loadClicked = GUILayout.Button("Load");
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();
         GUILayout.EndArea();
@@ -68,7 +76,16 @@ public class SettingsScreen {
 
         if (exitClicked)
             Application.Quit();
-        return buttonClicked;
+
+        if (loadClicked)
+        {
+            Settings.SaveSettings();
+            if (Settings.RootIndividualId != oldIndividual || Settings.ShowNames != oldShowNames || Settings.MaxDepth != oldMaxGenerations || AncestryWeb.loadedObjects == false)
+                AncestryWeb.ancestryState = AncestryWeb.AncestryState.InitialisingData;
+            else
+                AncestryWeb.ancestryState = AncestryWeb.AncestryState.Main;
+        }
+        return loadClicked;
 	}
 	
 

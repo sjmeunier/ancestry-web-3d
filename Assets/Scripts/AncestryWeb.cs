@@ -24,6 +24,7 @@ public class AncestryWeb : MonoBehaviour
     private static Dictionary<string, GedcomIndividual> gedcomIndividuals;
     private static Dictionary<string, GedcomFamily> gedcomFamilies;
 
+    public static bool loadedObjects = false;
     private string loadingText = "Loading...";
 
     Loader loader = new Loader();
@@ -34,7 +35,7 @@ public class AncestryWeb : MonoBehaviour
     public enum AncestryState
     {
         Settings,
-        Loading,
+        InitialisingData,
         Main
     }
 
@@ -437,11 +438,7 @@ public class AncestryWeb : MonoBehaviour
 
     public static void ShowSettings()
     {
-        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
-            GameObject.DestroyImmediate(individualSphere);
-        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
-            GameObject.DestroyImmediate(individualSphere);
-        
+       
         ancestryState = AncestryState.Settings;
     }
 
@@ -465,6 +462,7 @@ public class AncestryWeb : MonoBehaviour
         InitialiseAncestors();
         CreateAncestorObjects();
         ancestryState = AncestryState.Main;
+        loadedObjects = true;
         StopCoroutine("InitMain");
     }
 
@@ -472,15 +470,15 @@ public class AncestryWeb : MonoBehaviour
     {
         if (ancestryState == AncestryState.Settings)
         {
-            if (settingsScreen.draw())
-            {
-                Settings.SaveSettings();
-                ancestryState = AncestryState.Loading;
-            }
-
+            settingsScreen.draw();
         }
-        else if (ancestryState == AncestryState.Loading)
+        else if (ancestryState == AncestryState.InitialisingData)
         {
+            foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
+                GameObject.DestroyImmediate(individualSphere);
+            foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
+                GameObject.DestroyImmediate(individualSphere);
+
             loader.draw(loadingText);
             StartCoroutine("InitMain");
         }
