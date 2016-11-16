@@ -18,13 +18,12 @@ public class CameraMovement : MonoBehaviour
     private bool isRotating;    // Is the camera being rotated?
     private bool isZooming;     // Is the camera zooming?
 
-    private string previousId = "";
-    //
-    // UPDATE
-    //
 
     void Update()
     {
+        if (AncestryWeb.ancestryState != AncestryWeb.AncestryState.Main)
+            return;
+
         // Get the left mouse button
         if (Input.GetMouseButtonDown(0))
         {
