@@ -221,28 +221,28 @@ public class AncestryData
             }
 
             StringBuilder sb = new StringBuilder();
-			sb.Append(selectedIndividual.Value.Id.Replace("@", "") + "\r\n");
-			sb.Append("Ahnentafel Number: " + selectedIndividual.Value.AhnentafelNumber.ToString() + "\r\n");
-			sb.Append(selectedIndividual.Value.SummaryName + "\r\n");
-			if (!string.IsNullOrEmpty(selectedIndividual.Value.SummaryBirthDate))
-				sb.Append("\r\n" + selectedIndividual.Value.SummaryBirthDate);
-			if (!string.IsNullOrEmpty(selectedIndividual.Value.SummaryDeathDate))
-				sb.Append("\r\n" + selectedIndividual.Value.SummaryDeathDate);
+			sb.Append(individual.Id.Replace("@", "") + "\r\n");
+			sb.Append("Ahnentafel Number: " + individual.AhnentafelNumber.ToString() + "\r\n");
+			sb.Append(individual.SummaryName + "\r\n");
+			if (!string.IsNullOrEmpty(individual.SummaryBirthDate))
+				sb.Append("\r\n" + individual.SummaryBirthDate);
+			if (!string.IsNullOrEmpty(individual.SummaryDeathDate))
+				sb.Append("\r\n" + individual.SummaryDeathDate);
 
-			sb.Append("\r\n\r\n" + "Father: " + selectedIndividual.Value.SummaryFatherName);
-			sb.Append("\r\n" + "Mother: " + selectedIndividual.Value.SummaryMotherName);
-			sb.Append("\r\n\r\n" + "Lines of Descent: " + selectedIndividual.Value.AppearanceCount.ToString());
+			sb.Append("\r\n\r\n" + "Father: " + individual.SummaryFatherName);
+			sb.Append("\r\n" + "Mother: " + individual.SummaryMotherName);
+			sb.Append("\r\n\r\n" + "Lines of Descent: " + individual.AppearanceCount.ToString());
 
-			foreach (KeyValuePair<string,string> spouseSummary in selectedIndividual.Value.SummarySpouse)
+			foreach (KeyValuePair<string,string> spouseSummary in individual.SummarySpouse)
 			{
 				sb.Append("\r\n\r\nSpouse: " + spouseSummary.Value);
-				if (selectedIndividual.Value.SummaryMarriage.ContainsKey(spouseSummary.Key))
+				if (individual.SummaryMarriage.ContainsKey(spouseSummary.Key))
 				{
-					sb.Append("\r\n" + selectedIndividual.Value.SummaryMarriage[spouseSummary.Key]);
+					sb.Append("\r\n" + individual.SummaryMarriage[spouseSummary.Key]);
 				}
-				if (selectedIndividual.Value.SummaryChildren.ContainsKey(spouseSummary.Key)) {
+				if (individual.SummaryChildren.ContainsKey(spouseSummary.Key)) {
 					sb.Append("\r\n  Children:");
-					foreach (string childSummary in selectedIndividual.Value.SummaryChildren[spouseSummary.Key])
+					foreach (string childSummary in individual.SummaryChildren[spouseSummary.Key])
 					{
 						sb.Append("\r\n  - " + childSummary); 
 					}
