@@ -47,8 +47,8 @@ public class SettingsScreen {
         GUILayout.Label("Imported Data");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        GUILayout.Label(string.Format("Individuals: {0}", AncestryData.gedcomIndividuals.Values.Count()) );
-        GUILayout.Label(string.Format("Families: {0}", AncestryData.gedcomFamilies.Values.Count()) );
+        GUILayout.Label(string.Format("Individuals: {0}", AncestryData.gedcomIndividuals.Values.Count) );
+        GUILayout.Label(string.Format("Families: {0}", AncestryData.gedcomFamilies.Values.Count) );
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         bool importClicked = GUILayout.Button("Import New Data");
@@ -62,7 +62,7 @@ public class SettingsScreen {
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         GUILayout.Label("");
-        GUILayout.Label(AncestryWeb.GenerateName("@" + Settings.RootIndividualId + "@"));
+        GUILayout.Label(AncestryData.GenerateName("@" + Settings.RootIndividualId + "@"));
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         GUILayout.Label("Max Generations");

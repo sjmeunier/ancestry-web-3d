@@ -137,7 +137,7 @@ public class AncestryWeb : MonoBehaviour
             {
                 if (fb.outputFile == null)
                 {
-                    ancestryState = AncestryState.Settings
+                    ancestryState = AncestryState.Settings;
                 }
                 else
                 {
