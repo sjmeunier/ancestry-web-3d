@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class CameraMovement : MonoBehaviour
@@ -107,27 +107,24 @@ public class CameraMovement : MonoBehaviour
             AncestryWeb.ShowSettings();
         }
 
-        if (!isPanning && !isRotating && !isZooming)
+        if (!isPanning && !isRotating && !isZooming && AncestryWeb.loadedObjects)
         {
-            if (!string.IsNullOrEmpty(AncestryWeb.selectedIndividualId))
+            if (!string.IsNullOrEmpty(AncestryData.selectedIndividualId))
             {
                 foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
                 {
-                    if (AncestryWeb.ancestors[AncestryWeb.selectedIndividualId].Sex == "M")
-                        individualSphere.transform.GetChild(0).GetComponent<Renderer>().material.color = Color.blue;
-                    else
-                        individualSphere.transform.GetChild(0).GetComponent<Renderer>().material.color = Color.red;
+                    individualSphere.transform.GetChild(0).GetComponent<Renderer>().material.color = AncestryData.ancestorGameData[AncestryData.selectedIndividualId].MaterialColor;
                     individualSphere.tag = "Individual";
                 }
             }
-            AncestryWeb.selectedIndividualId = null;
+            AncestryData.selectedIndividualId = null;
             ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 if (hit.collider.name.Contains("Sphere"))
                 {
-                    AncestryWeb.selectedIndividualId = hit.collider.GetComponentInParent<IndividualSphere>().individualId;
-                    AncestryWeb.selectedIndividual = AncestryWeb.ancestors[AncestryWeb.selectedIndividualId];
+                    AncestryData.selectedIndividualId = hit.collider.GetComponentInParent<IndividualSphere>().individualId;
+                    AncestryData.selectedIndividual = AncestryData.ancestors[AncestryData.selectedIndividualId];
 
                     hit.collider.GetComponentInParent<IndividualSphere>().transform.GetChild(0).GetComponent<Renderer>().material.color = Color.yellow;
                     hit.collider.GetComponentInParent<IndividualSphere>().tag = "Highlighted";

@@ -33,6 +33,7 @@ namespace Assets
         public Dictionary<string, HashSet<string>> SummaryChildren;
         public string SummaryFatherName;
         public string SummaryMotherName;
+		public string FullSummary;
 
         public AncestorIndividual(string id)
         {
@@ -62,6 +63,7 @@ namespace Assets
             SummarySpouse = new Dictionary<string, string>();
             SummaryMarriage = new Dictionary<string, string>();
             SummaryChildren = new Dictionary<string, HashSet<string>>();
+			FullSummary = "";
         }
     }
 

@@ -32,7 +32,7 @@ public class SettingsScreen {
 	public void setGUIRect(Rect r){	guiSize=r;	}
 	
 	
-	public bool draw(){
+	public void draw(){
         oldIndividual = Settings.RootIndividualId;
         oldMaxGenerations = Settings.MaxDepth;
         oldShowNames = Settings.ShowNames;
@@ -42,6 +42,19 @@ public class SettingsScreen {
 			GUI.skin = guiSkin;
 		}
 		GUILayout.BeginArea(guiSize);
+		GUILayout.BeginVertical("box");
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Imported Data");
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(string.Format("Individuals: {0}", AncestryData.gedcomIndividuals.Values.Count()) );
+        GUILayout.Label(string.Format("Families: {0}", AncestryData.gedcomFamilies.Values.Count()) );
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        bool importClicked = GUILayout.Button("Import New Data");
+        GUILayout.EndHorizontal();		
+        GUILayout.EndVertical();
+		
         GUILayout.BeginVertical("box");
         GUILayout.BeginHorizontal();
         GUILayout.Label("Root Individual");
@@ -77,6 +90,12 @@ public class SettingsScreen {
         if (exitClicked)
             Application.Quit();
 
+		if (importClicked)
+		{
+			Settings.SaveSettings();
+			AncestryWeb.ancestryState = AncestryWeb.AncestryState.ImportScreen;
+		}
+		
         if (loadClicked)
         {
             Settings.SaveSettings();
@@ -85,7 +104,7 @@ public class SettingsScreen {
             else
                 AncestryWeb.ancestryState = AncestryWeb.AncestryState.Main;
         }
-        return loadClicked;
+		
 	}
 	
 
@@ -95,4 +114,3 @@ public class SettingsScreen {
 		return "Name: "+name+"\nVisible: "+isVisible.ToString()+"\nGUI Size: "+guiSize.ToString();
 	}
 }
-

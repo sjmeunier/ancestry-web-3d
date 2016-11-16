@@ -33,14 +33,14 @@ public class DrawLines : MonoBehaviour
             if (Settings.ShowDescentLines)
             {
                 GL.Color(new Color(0.25f, 0.25f, 0.75f, 1f));
-                foreach (var line in AncestryWeb.decentMaleLineVectors)
+                foreach (var line in AncestryData.descentMaleLineVectors)
                 {
                     GL.Vertex3(line[0].x, line[0].y, line[0].z);
                     GL.Vertex3(line[1].x, line[1].y, line[1].z);
                 };
 
                 GL.Color(new Color(0.75f, 0.25f, 0.25f, 1f));
-                foreach (var line in AncestryWeb.decentFemaleLineVectors)
+                foreach (var line in AncestryData.descentFemaleLineVectors)
                 {
                     GL.Vertex3(line[0].x, line[0].y, line[0].z);
                     GL.Vertex3(line[1].x, line[1].y, line[1].z);
@@ -49,7 +49,7 @@ public class DrawLines : MonoBehaviour
             if (Settings.ShowMarriageLines)
             {
                 GL.Color(new Color(0.25f, 0.75f, 0.25f, 1f));
-                foreach (var line in AncestryWeb.marriageLineVectors)
+                foreach (var line in AncestryData.marriageLineVectors)
                 {
                     GL.Vertex3(line[0].x, line[0].y, line[0].z);
                     GL.Vertex3(line[1].x, line[1].y, line[1].z);
