@@ -82,6 +82,8 @@ public class AncestryWeb : MonoBehaviour
 
     void Start()
     {
+        AncestryData.gedcomFamilies = new Dictionary<string, GedcomFamily>();
+        AncestryData.gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
         Settings.LoadSettings();
         ancestryState = AncestryState.Settings;
 
