@@ -32,6 +32,7 @@ public class AncestryWeb : MonoBehaviour
 		ImportScreen,
 		ImportingData,
         InitialisingData,
+        InitialisingObjects,
         Main
     }
 
@@ -102,20 +103,32 @@ public class AncestryWeb : MonoBehaviour
     }
 
 
-    private IEnumerator InitMain()
+    private IEnumerator InitData()
     {
         loadingText = "Initialising ancestors...";
         yield return new WaitForSeconds(0.25f);
         loadedObjects = false;
 		DeleteGameObjects();
         AncestryData.InitialiseAncestors();
+        ancestryState = AncestryState.InitialisingObjects;
+        StopCoroutine("InitData");
+    }
+
+    private IEnumerator InitObjects()
+    {
+        loadingText = "Initialising objects...";
+        yield return new WaitForSeconds(0.25f);
+        loadedObjects = false;
+        DeleteGameObjects();
+        AncestryData.InitialiseAncestors();
         CreateGameObjects();
         ancestryState = AncestryState.Main;
         loadedObjects = true;
-        StopCoroutine("InitMain");
+        StopCoroutine("InitObjects");
     }
-	
-	private IEnumerator ImportData()
+
+
+    private IEnumerator ImportData()
     {
         loadingText = "Importing Gedcom...";
         yield return new WaitForSeconds(0.25f);
@@ -158,7 +171,12 @@ public class AncestryWeb : MonoBehaviour
 		else if (ancestryState == AncestryState.InitialisingData)
         {
             loader.draw(loadingText);
-            StartCoroutine("InitMain");
+            StartCoroutine("InitData");
+        }
+        else if (ancestryState == AncestryState.InitialisingObjects)
+        {
+            loader.draw(loadingText);
+            StartCoroutine("InitObjects");
         }
         else if (ancestryState == AncestryState.Main)
         {

@@ -18,9 +18,9 @@ public class SettingsScreen {
 	protected GUISkin oldSkin;
 	protected bool visible = false;
 
-    private string oldIndividual = "";
-    private int oldMaxGenerations = 0;
-    private bool oldShowNames = true;
+    private static string oldIndividual = "";
+    private static int oldMaxGenerations = 0;
+    private static bool oldShowNames = true;
 
 	//Constructors
 	public SettingsScreen(){
@@ -33,9 +33,6 @@ public class SettingsScreen {
 	
 	
 	public void draw(){
-        oldIndividual = Settings.RootIndividualId;
-        oldMaxGenerations = Settings.MaxDepth;
-        oldShowNames = Settings.ShowNames;
 
 		if(guiSkin){
 			oldSkin = GUI.skin;
@@ -99,10 +96,16 @@ public class SettingsScreen {
         if (loadClicked)
         {
             Settings.SaveSettings();
-            if (Settings.RootIndividualId != oldIndividual || Settings.ShowNames != oldShowNames || Settings.MaxDepth != oldMaxGenerations || AncestryWeb.loadedObjects == false)
+            if (Settings.RootIndividualId != oldIndividual || Settings.MaxDepth != oldMaxGenerations || AncestryWeb.loadedObjects == false)
                 AncestryWeb.ancestryState = AncestryWeb.AncestryState.InitialisingData;
+            else if (Settings.ShowNames != oldShowNames)
+                AncestryWeb.ancestryState = AncestryWeb.AncestryState.InitialisingObjects;
             else
                 AncestryWeb.ancestryState = AncestryWeb.AncestryState.Main;
+
+            SettingsScreen.oldIndividual = Settings.RootIndividualId;
+            SettingsScreen.oldMaxGenerations = Settings.MaxDepth;
+            SettingsScreen.oldShowNames = Settings.ShowNames;
         }
 		
 	}
