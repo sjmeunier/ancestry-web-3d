@@ -23,7 +23,9 @@ public class DrawLines : MonoBehaviour
         }
     }
 
+
     void OnPostRender() {
+        /*
         CreateLineMaterial();
         lineMaterial.SetPass(0);
 
@@ -57,5 +59,6 @@ public class DrawLines : MonoBehaviour
             }
             GL.End();
         }
+        */
     }
 }
