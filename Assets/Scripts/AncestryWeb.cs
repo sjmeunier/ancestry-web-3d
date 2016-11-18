@@ -25,13 +25,6 @@ public class AncestryWeb : MonoBehaviour
 	//initialize file browser
 	FileBrowser fb;
 
-    Mesh descentMaleLineMesh;
-    public Material descentMaleLineMaterial;
-    Mesh descentFemaleLineMesh;
-    public Material descentFemaleLineMaterial;
-    Mesh marriageLineMesh;
-    public Material marriageLineMaterial;
-
     private float lineWidth = 0.06f;
 
     public enum AncestryState
@@ -65,28 +58,45 @@ public class AncestryWeb : MonoBehaviour
             
 			individualSpheres[i].tag = "Individual";
             individualSpheres[i].GetComponent<IndividualSphere>().individualId = data.Id;
+            individualSpheres[i].transform.localRotation = transform.rotation;
 
         }
 
-        descentMaleLineMesh = new Mesh();
-        foreach (var line in AncestryData.descentMaleLineVectors)
+        if (Settings.ShowDescentLines)
         {
-            AddLine(descentMaleLineMesh, MakeQuad(line[0], line[1], lineWidth), false);
-        };
+            foreach (var line in AncestryData.descentMaleLineVectors)
+            {
+                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MaleLineCylinder");
+            };
 
-        descentFemaleLineMesh = new Mesh();
-        foreach (var line in AncestryData.descentFemaleLineVectors)
-        {
-            AddLine(descentFemaleLineMesh, MakeQuad(line[0], line[1], lineWidth), false);
-        };
+            foreach (var line in AncestryData.descentFemaleLineVectors)
+            {
+                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "FemaleLineCylinder");
+            };
+        }
 
-        marriageLineMesh = new Mesh();
-        foreach (var line in AncestryData.marriageLineVectors)
+        if (Settings.ShowMarriageLines)
         {
-            AddLine(marriageLineMesh, MakeQuad(line[0], line[1], lineWidth), false);
-        };
+            foreach (var line in AncestryData.marriageLineVectors)
+            {
+                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MarriageLineCylinder");
+            };
+        }
+    }
+
+    private void CreateCylinderBetweenPoints(Vector3 start, Vector3 end, float width, string cylinderName)
+    {
+        var offset = end - start;
+        var scale = new Vector3(width, offset.magnitude / 2.0f, width);
+        var position = start + (offset / 2.0f);
+
+
+        GameObject cylinder = (GameObject)Instantiate(Resources.Load(cylinderName), position, Quaternion.identity);
+        cylinder.transform.up = offset;
+        cylinder.transform.localScale = scale;
 
     }
+
 
     private void DeleteGameObjects()
 	{
@@ -105,16 +115,7 @@ public class AncestryWeb : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (ancestryState == AncestryState.Main && loadedObjects == true)
-        {
-            if (Settings.ShowDescentLines)
-            {
-                Graphics.DrawMesh(descentMaleLineMesh, transform.localToWorldMatrix, descentMaleLineMaterial, 0);
-                Graphics.DrawMesh(descentFemaleLineMesh, transform.localToWorldMatrix, descentFemaleLineMaterial, 0);
-            }
-            if (Settings.ShowMarriageLines)
-                Graphics.DrawMesh(marriageLineMesh, transform.localToWorldMatrix, marriageLineMaterial, 0);
-        }
+
     }
 
     void Start()
@@ -135,10 +136,6 @@ public class AncestryWeb : MonoBehaviour
 		fb.driveTexture = drive;
 		fb.showSearch = true;
 		fb.searchRecursively = true;
-
-        descentMaleLineMesh = new Mesh();
-        descentFemaleLineMesh = new Mesh();
-        marriageLineMesh = new Mesh();
 
     }
 
@@ -164,67 +161,6 @@ public class AncestryWeb : MonoBehaviour
         ancestryState = AncestryState.Main;
         loadedObjects = true;
         StopCoroutine("InitObjects");
-    }
-
-    public Vector3[] MakeQuad(Vector3 s, Vector3 e, float w)
-    {
-        w = w / 2;
-        Vector3[] q = new Vector3[4];
-
-        Vector3 n = Vector3.Cross(s, e);
-        Vector3 l = Vector3.Cross(n, e - s);
-        l.Normalize();
-
-        q[0] = transform.InverseTransformPoint(s + l * w);
-        q[1] = transform.InverseTransformPoint(s + l * -w);
-        q[2] = transform.InverseTransformPoint(e + l * w);
-        q[3] = transform.InverseTransformPoint(e + l * -w);
-
-        return q;
-    }
-
-    void AddLine(Mesh m, Vector3[] quad, bool tmp)
-    {
-        int vl = m.vertices.Length;
-
-        Vector3[] vs = m.vertices;
-        if (!tmp || vl == 0) vs = resizeVertices(vs, 4);
-        else vl -= 4;
-
-        vs[vl] = quad[0];
-        vs[vl + 1] = quad[1];
-        vs[vl + 2] = quad[2];
-        vs[vl + 3] = quad[3];
-
-        int tl = m.triangles.Length;
-
-        int[] ts = m.triangles;
-        if (!tmp || tl == 0) ts = resizeTriangles(ts, 6);
-        else tl -= 6;
-        ts[tl] = vl;
-        ts[tl + 1] = vl + 1;
-        ts[tl + 2] = vl + 2;
-        ts[tl + 3] = vl + 1;
-        ts[tl + 4] = vl + 3;
-        ts[tl + 5] = vl + 2;
-
-        m.vertices = vs;
-        m.triangles = ts;
-        m.RecalculateBounds();
-    }
-
-    Vector3[] resizeVertices(Vector3[] ovs, int ns)
-    {
-        Vector3[] nvs = new Vector3[ovs.Length + ns];
-        for (int i = 0; i < ovs.Length; i++) nvs[i] = ovs[i];
-        return nvs;
-    }
-
-    int[] resizeTriangles(int[] ovs, int ns)
-    {
-        int[] nvs = new int[ovs.Length + ns];
-        for (int i = 0; i < ovs.Length; i++) nvs[i] = ovs[i];
-        return nvs;
     }
 
     private IEnumerator ImportData()
