@@ -66,12 +66,12 @@ public class AncestryWeb : MonoBehaviour
         {
             foreach (var line in AncestryData.descentMaleLineVectors)
             {
-                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MaleLineCylinder");
+                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MaleLineCylinder", "DescentMaleLine");
             };
 
             foreach (var line in AncestryData.descentFemaleLineVectors)
             {
-                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "FemaleLineCylinder");
+                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "FemaleLineCylinder", "DescentFemaleLine");
             };
         }
 
@@ -79,12 +79,12 @@ public class AncestryWeb : MonoBehaviour
         {
             foreach (var line in AncestryData.marriageLineVectors)
             {
-                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MarriageLineCylinder");
+                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MarriageLineCylinder", "MarriageLine");
             };
         }
     }
 
-    private void CreateCylinderBetweenPoints(Vector3 start, Vector3 end, float width, string cylinderName)
+    private void CreateCylinderBetweenPoints(Vector3 start, Vector3 end, float width, string cylinderName, string tag)
     {
         var offset = end - start;
         var scale = new Vector3(width, offset.magnitude / 2.0f, width);
@@ -94,6 +94,7 @@ public class AncestryWeb : MonoBehaviour
         GameObject cylinder = (GameObject)Instantiate(Resources.Load(cylinderName), position, Quaternion.identity);
         cylinder.transform.up = offset;
         cylinder.transform.localScale = scale;
+        cylinder.tag = tag;
 
     }
 
@@ -104,7 +105,14 @@ public class AncestryWeb : MonoBehaviour
 			GameObject.DestroyImmediate(individualSphere);
 		foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
 			GameObject.DestroyImmediate(individualSphere);
-	}
+
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("DescentMaleLine"))
+            GameObject.DestroyImmediate(line);
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("DescentFemaleLine"))
+            GameObject.DestroyImmediate(line);
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("MarriageLine"))
+            GameObject.DestroyImmediate(line);
+    }
 
     public static void ShowSettings()
     {
