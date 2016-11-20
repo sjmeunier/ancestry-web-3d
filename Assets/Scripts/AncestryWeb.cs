@@ -247,11 +247,11 @@ public class AncestryWeb : MonoBehaviour
         }
         else if (ancestryState == AncestryState.Main)
         {
-            if (AncestryData.selectedIndividualId != null && AncestryData.selectedIndividual.HasValue)
+            if (AncestryData.selectedIndividualId != null && AncestryData.selectedIndividual != null)
             {
                 GUILayout.BeginArea(new Rect(10f, 10f, Screen.width * 0.3f, Screen.height - 20f));
                 GUILayout.BeginVertical("box");
-                GUILayout.Label(AncestryData.selectedIndividual.Value.FullSummary);
+                GUILayout.Label(AncestryData.selectedIndividual.FullSummary);
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
             }

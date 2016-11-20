@@ -19,7 +19,7 @@ public class AncestryData
     public static List<Vector3[]> descentFemaleLineVectors = new List<Vector3[]>();
     public static List<Vector3[]> marriageLineVectors = new List<Vector3[]>();
     public static string selectedIndividualId = null;
-    public static AncestorIndividual? selectedIndividual = null;
+    public static AncestorIndividual selectedIndividual = null;
 	
     private static Dictionary<int, List<AncestorIndividual>> optimizedAncestors = new Dictionary<int, List<AncestorIndividual>>();
     private static Dictionary<int, int> ancestorGenerationCount = new Dictionary<int, int>();
@@ -385,7 +385,7 @@ public class AncestryData
 
             foreach (AncestorIndividual individual in optimizedAncestors[i].OrderBy(x => x.AhnentafelNumber))
             {
-				IndividualSphereData data = new IndividualSphereData();
+				IndividualSphereData data = new IndividualSphereData(individual.Id);
 				
 				data.Position = new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8 * Settings.ScaleFactor, (float)(radius * Math.Sin(angle)));
                 if (string.IsNullOrEmpty(individual.FatherId) && string.IsNullOrEmpty(individual.MotherId))
@@ -485,6 +485,42 @@ public class AncestryData
             for (int i = 0; i < recordCount; i++)
             {
                 gedcomFamilies.Add(reader.ReadString(), new GedcomFamily(reader));
+            }
+        }
+    }
+
+    public static void SaveProcessedDataFilename()
+    {
+        if (File.Exists(ProcessedDataFilename))
+            File.Delete(ProcessedDataFilename);
+        using (BinaryWriter writer = new BinaryWriter(new FileStream(ProcessedDataFilename, FileMode.OpenOrCreate)))
+        {
+            writer.Write(ancestors.Values.Count);
+            foreach (AncestorIndividual individual in ancestors.Values)
+            {
+                writer.Write(individual.Id);
+                individual.WriteToStream(writer);
+            }
+        }
+    }
+
+    public static void LoadProcessedData()
+    {
+        Dictionary<string, AncestorIndividual> ancestors = new Dictionary<string, AncestorIndividual>();
+        Dictionary<string, IndividualSphereData> ancestorGameData = new Dictionary<string, IndividualSphereData>();
+        List<Vector3[]> descentMaleLineVectors = new List<Vector3[]>();
+        List<Vector3[]> descentFemaleLineVectors = new List<Vector3[]>();
+        List<Vector3[]> marriageLineVectors = new List<Vector3[]>();
+
+        if (!File.Exists(ProcessedDataFilename))
+            return;
+
+        using (BinaryReader reader = new BinaryReader(new FileStream(ProcessedDataFilename, FileMode.OpenOrCreate)))
+        {
+            int recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                ancestors.Add(reader.ReadString(), new AncestorIndividual(reader));
             }
         }
     }

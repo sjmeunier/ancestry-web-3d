@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace Assets
 {
-    public struct AncestorIndividual
+    public class AncestorIndividual
     {
         public string Id;
         public string GivenName;
@@ -64,6 +65,40 @@ namespace Assets
             SummaryMarriage = new Dictionary<string, string>();
             SummaryChildren = new Dictionary<string, HashSet<string>>();
 			FullSummary = "";
+        }
+
+        public AncestorIndividual(BinaryReader reader)
+        {
+            ReadFromStream(reader);
+        }
+
+        public void WriteToStream(BinaryWriter writer)
+        {
+            writer.Write(Id);
+            writer.Write(GivenName);
+            writer.Write(Surname);
+            writer.Write(Suffix);
+            writer.Write(Prefix);
+            writer.Write(Sex);
+            writer.Write(BirthDate);
+            writer.Write(BirthPlace);
+            writer.Write(DiedDate);
+            writer.Write(DiedPlace);
+
+        }
+
+        private void ReadFromStream(BinaryReader reader)
+        {
+            Id = reader.ReadString();
+            GivenName = reader.ReadString();
+            Surname = reader.ReadString();
+            Suffix = reader.ReadString();
+            Prefix = reader.ReadString();
+            Sex = reader.ReadString();
+            BirthDate = reader.ReadString();
+            BirthPlace = reader.ReadString();
+            DiedDate = reader.ReadString();
+            DiedPlace = reader.ReadString();
         }
     }
 
