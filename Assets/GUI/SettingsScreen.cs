@@ -98,10 +98,8 @@ public class SettingsScreen {
             Settings.SaveSettings();
             if (Settings.RootIndividualId != oldIndividual || Settings.MaxDepth != oldMaxGenerations || AncestryWeb.loadedObjects == false)
                 AncestryWeb.ancestryState = AncestryWeb.AncestryState.InitialisingData;
-            else if (Settings.ShowNames != oldShowNames)
-                AncestryWeb.ancestryState = AncestryWeb.AncestryState.InitialisingObjects;
             else
-                AncestryWeb.ancestryState = AncestryWeb.AncestryState.Main;
+                AncestryWeb.ancestryState = AncestryWeb.AncestryState.UpdatingObjects;
 
             SettingsScreen.oldIndividual = Settings.RootIndividualId;
             SettingsScreen.oldMaxGenerations = Settings.MaxDepth;

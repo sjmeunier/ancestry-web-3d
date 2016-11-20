@@ -34,7 +34,23 @@ public class AncestryWeb : MonoBehaviour
 		ImportingData,
         InitialisingData,
         InitialisingObjects,
+        UpdatingObjects,
         Main
+    }
+
+    private void UpdateVisiblity()
+    {
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("DescentMaleLine"))
+            line.GetComponentInChildren<MeshRenderer>().enabled = Settings.ShowDescentLines;
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("DescentFemaleLine"))
+            line.GetComponentInChildren<MeshRenderer>().enabled = Settings.ShowDescentLines;
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("MarriageLine"))
+            line.GetComponentInChildren<MeshRenderer>().enabled = Settings.ShowMarriageLines;
+
+        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
+            individualSphere.transform.GetChild(1).GetComponent<TextMesh>().GetComponentInChildren<MeshRenderer>().enabled = Settings.ShowNames;
+        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
+            individualSphere.transform.GetChild(1).GetComponent<TextMesh>().GetComponentInChildren<MeshRenderer>().enabled = Settings.ShowNames;
     }
 
     private void CreateGameObjects()
@@ -48,10 +64,7 @@ public class AncestryWeb : MonoBehaviour
             individualSpheres[i].transform.GetChild(0).GetComponent<Renderer>().material.color = data.MaterialColor;
             individualSpheres[i].transform.localScale = new Vector3(data.SphereRadius, data.SphereRadius, data.SphereRadius);
 
-			if (Settings.ShowNames)
-				individualSpheres[i].transform.GetChild(1).GetComponent<TextMesh>().text = data.Text;
-			else
-				individualSpheres[i].transform.GetChild(1).GetComponent<TextMesh>().text = "";
+			individualSpheres[i].transform.GetChild(1).GetComponent<TextMesh>().text = data.Text;
 			
 			if (data.SphereRadius > 1)
 				individualSpheres[i].transform.GetChild(1).transform.localScale = new Vector3(1f / data.SphereRadius, 1f / data.SphereRadius, 1f / data.SphereRadius);
@@ -62,26 +75,19 @@ public class AncestryWeb : MonoBehaviour
 
         }
 
-        if (Settings.ShowDescentLines)
+        foreach (var line in AncestryData.descentMaleLineVectors)
         {
-            foreach (var line in AncestryData.descentMaleLineVectors)
-            {
-                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MaleLineCylinder", "DescentMaleLine");
-            };
+            CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MaleLineCylinder", "DescentMaleLine");
+        };
 
-            foreach (var line in AncestryData.descentFemaleLineVectors)
-            {
-                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "FemaleLineCylinder", "DescentFemaleLine");
-            };
-        }
-
-        if (Settings.ShowMarriageLines)
+        foreach (var line in AncestryData.descentFemaleLineVectors)
         {
-            foreach (var line in AncestryData.marriageLineVectors)
-            {
-                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MarriageLineCylinder", "MarriageLine");
-            };
-        }
+            CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "FemaleLineCylinder", "DescentFemaleLine");
+        };
+        foreach (var line in AncestryData.marriageLineVectors)
+        {
+            CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MarriageLineCylinder", "MarriageLine");
+        };
     }
 
     private void CreateCylinderBetweenPoints(Vector3 start, Vector3 end, float width, string cylinderName, string tag)
@@ -166,9 +172,19 @@ public class AncestryWeb : MonoBehaviour
         DeleteGameObjects();
         AncestryData.InitialiseAncestors();
         CreateGameObjects();
+        UpdateVisiblity();
         ancestryState = AncestryState.Main;
         loadedObjects = true;
         StopCoroutine("InitObjects");
+    }
+
+    private IEnumerator UpdateObjects()
+    {
+        loadingText = "Updating objects...";
+        yield return new WaitForSeconds(0.25f);
+        UpdateVisiblity();
+        ancestryState = AncestryState.Main;
+        StopCoroutine("UpdateObjects");
     }
 
     private IEnumerator ImportData()
@@ -220,6 +236,11 @@ public class AncestryWeb : MonoBehaviour
         {
             loader.draw(loadingText);
             StartCoroutine("InitObjects");
+        }
+        else if (ancestryState == AncestryState.UpdatingObjects)
+        {
+            loader.draw(loadingText);
+            StartCoroutine("UpdateObjects");
         }
         else if (ancestryState == AncestryState.Main)
         {
