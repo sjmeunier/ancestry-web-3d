@@ -501,6 +501,46 @@ public class AncestryData
                 writer.Write(individual.Id);
                 individual.WriteToStream(writer);
             }
+
+            writer.Write(ancestorGameData.Values.Count);
+            foreach (IndividualSphereData individual in ancestorGameData.Values)
+            {
+                writer.Write(individual.Id);
+                individual.WriteToStream(writer);
+            }
+
+            writer.Write(descentMaleLineVectors.Count);
+            foreach (Vector3[] line in descentMaleLineVectors)
+            {
+                writer.Write(line[0].x);
+                writer.Write(line[0].y);
+                writer.Write(line[0].z);
+                writer.Write(line[1].x);
+                writer.Write(line[1].y);
+                writer.Write(line[1].z);
+            }
+
+            writer.Write(descentFemaleLineVectors.Count);
+            foreach (Vector3[] line in descentFemaleLineVectors)
+            {
+                writer.Write(line[0].x);
+                writer.Write(line[0].y);
+                writer.Write(line[0].z);
+                writer.Write(line[1].x);
+                writer.Write(line[1].y);
+                writer.Write(line[1].z);
+            }
+
+            writer.Write(marriageLineVectors.Count);
+            foreach (Vector3[] line in marriageLineVectors)
+            {
+                writer.Write(line[0].x);
+                writer.Write(line[0].y);
+                writer.Write(line[0].z);
+                writer.Write(line[1].x);
+                writer.Write(line[1].y);
+                writer.Write(line[1].z);
+            }
         }
     }
 
