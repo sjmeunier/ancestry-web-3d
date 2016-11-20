@@ -22,6 +22,11 @@ namespace Assets
             ObjectType = "IndividualSphere";
         }
 
+        public IndividualSphereData(BinaryReader reader)
+        {
+            ReadFromStream(reader);
+        }
+
         public void WriteToStream(BinaryWriter writer)
         {
             writer.Write(Id);
@@ -29,7 +34,6 @@ namespace Assets
             writer.Write(Position.x);
             writer.Write(Position.y);
             writer.Write(Position.z);
-            writer.Write(MaterialColor.a);
             writer.Write(MaterialColor.r);
             writer.Write(MaterialColor.g);
             writer.Write(MaterialColor.b);

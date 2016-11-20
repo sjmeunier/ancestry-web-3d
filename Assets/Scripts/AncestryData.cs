@@ -27,7 +27,7 @@ public class AncestryData
 	private static int highestDepth = 0;
 	
 	private static string GedcomDataFilename = "GedcomData.dat";
-	private static string ProcessedDataFilename = "GameData.data";
+	private static string ProcessedDataFilename = "GameData.dat";
 		
     private static void ProcessAncestor(string individualId, string childId, long ahnentafelNumber, int depth)
     {
@@ -489,12 +489,13 @@ public class AncestryData
         }
     }
 
-    public static void SaveProcessedDataFilename()
+    public static void SaveProcessedDataFile()
     {
         if (File.Exists(ProcessedDataFilename))
             File.Delete(ProcessedDataFilename);
         using (BinaryWriter writer = new BinaryWriter(new FileStream(ProcessedDataFilename, FileMode.OpenOrCreate)))
         {
+            writer.Write(highestDepth);
             writer.Write(ancestors.Values.Count);
             foreach (AncestorIndividual individual in ancestors.Values)
             {
@@ -557,10 +558,36 @@ public class AncestryData
 
         using (BinaryReader reader = new BinaryReader(new FileStream(ProcessedDataFilename, FileMode.OpenOrCreate)))
         {
+            highestDepth = reader.ReadInt32();
+
             int recordCount = reader.ReadInt32();
             for (int i = 0; i < recordCount; i++)
             {
                 ancestors.Add(reader.ReadString(), new AncestorIndividual(reader));
+            }
+
+            recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                ancestorGameData.Add(reader.ReadString(), new IndividualSphereData(reader));
+            }
+
+            recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                descentMaleLineVectors.Add(new Vector3[2] {new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
+            }
+
+            recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                descentFemaleLineVectors.Add(new Vector3[2] { new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
+            }
+
+            recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                marriageLineVectors.Add(new Vector3[2] { new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
             }
         }
     }

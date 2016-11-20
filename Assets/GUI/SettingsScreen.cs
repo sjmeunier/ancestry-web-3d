@@ -96,8 +96,19 @@ public class SettingsScreen {
         if (loadClicked)
         {
             Settings.SaveSettings();
-            if (Settings.RootIndividualId != oldIndividual || Settings.MaxDepth != oldMaxGenerations || AncestryWeb.loadedObjects == false)
+            if (AncestryWeb.loadedObjects == false)
+            {
+                if (AncestryWeb.loadedData == true)
+                    AncestryWeb.ancestryState = AncestryWeb.AncestryState.InitialisingObjects;
+                else
+                    AncestryWeb.ancestryState = AncestryWeb.AncestryState.InitialisingData;
+                AncestryWeb.loadedData = false;
+            }
+            else if (Settings.RootIndividualId != oldIndividual || Settings.MaxDepth != oldMaxGenerations)
+            {
+                AncestryWeb.loadedData = false;
                 AncestryWeb.ancestryState = AncestryWeb.AncestryState.InitialisingData;
+            }
             else
                 AncestryWeb.ancestryState = AncestryWeb.AncestryState.UpdatingObjects;
 

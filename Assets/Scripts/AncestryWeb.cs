@@ -13,6 +13,7 @@ public class AncestryWeb : MonoBehaviour
 
     private GameObject[] individualSpheres;
 
+    public static bool loadedData = false;
     public static bool loadedObjects = false;
     private string loadingText = "Loading...";
 
@@ -29,6 +30,8 @@ public class AncestryWeb : MonoBehaviour
 
     public enum AncestryState
     {
+        LoadingGedcom,
+        LoadingData,
         Settings,
 		ImportScreen,
 		ImportingData,
@@ -138,6 +141,11 @@ public class AncestryWeb : MonoBehaviour
         AncestryData.gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
         Settings.LoadSettings();
         AncestryData.LoadGedcomData();
+        AncestryData.LoadProcessedData();
+        if (AncestryData.ancestors.Count > 0)
+            loadedData = true;
+        else
+            loadedData = false;
 
         ancestryState = AncestryState.Settings;
 
@@ -155,6 +163,7 @@ public class AncestryWeb : MonoBehaviour
 
     }
 
+
     private IEnumerator InitData()
     {
         loadingText = "Initialising ancestors...";
@@ -166,6 +175,7 @@ public class AncestryWeb : MonoBehaviour
         StopCoroutine("InitData");
     }
 
+    
     private IEnumerator InitObjects()
     {
         loadingText = "Initialising objects...";
@@ -175,6 +185,7 @@ public class AncestryWeb : MonoBehaviour
         AncestryData.InitialiseAncestors();
         CreateGameObjects();
         UpdateVisiblity();
+        AncestryData.SaveProcessedDataFile();
         ancestryState = AncestryState.Main;
         loadedObjects = true;
         StopCoroutine("InitObjects");
