@@ -56,19 +56,14 @@ public class AncestryData
 
             individual.AhnentafelNumber = ahnentafelNumber;
 
-            GedcomFamily? gedcomFamily = null;
             foreach (GedcomFamily family in gedcomFamilies.Values)
             {
                 if (family.Children.Contains(individualId))
                 {
-                    gedcomFamily = family;
+                    individual.FatherId = family.HusbandId;
+                    individual.MotherId = family.WifeId;
                     break;
                 }
-            }
-            if (gedcomFamily != null)
-            {
-                individual.FatherId = gedcomFamily.Value.HusbandId;
-                individual.MotherId = gedcomFamily.Value.WifeId;
             }
 
             ancestors.Add(individualId, individual);
