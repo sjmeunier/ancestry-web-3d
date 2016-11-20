@@ -61,8 +61,6 @@ public class CameraMovement : MonoBehaviour
             transform.RotateAround(transform.position, transform.right, -pos.y * turnSpeed);
             transform.RotateAround(transform.position, Vector3.up, pos.x * turnSpeed);
 
-            foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
-                individualSphere.transform.localRotation = transform.rotation;
         }
 
         // Move the camera on it's XY plane
@@ -105,6 +103,11 @@ public class CameraMovement : MonoBehaviour
         {
             AncestryWeb.ShowSettings();
         }
+
+        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
+            individualSphere.transform.localRotation = transform.rotation;
+        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
+            individualSphere.transform.localRotation = transform.rotation;
 
         if (!isPanning && !isRotating && !isZooming && AncestryWeb.loadedObjects)
         {

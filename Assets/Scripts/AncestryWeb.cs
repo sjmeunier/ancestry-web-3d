@@ -137,6 +137,8 @@ public class AncestryWeb : MonoBehaviour
         AncestryData.gedcomFamilies = new Dictionary<string, GedcomFamily>();
         AncestryData.gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
         Settings.LoadSettings();
+        AncestryData.LoadGedcomData();
+
         ancestryState = AncestryState.Settings;
 
 		if (string.IsNullOrEmpty(Settings.CurrentFolder))
@@ -194,6 +196,7 @@ public class AncestryWeb : MonoBehaviour
         loadedObjects = false;
 		DeleteGameObjects();
 		AncestryData.ImportGedcom(GedcomFilename);
+        AncestryData.SaveGedcomData();
         ancestryState = AncestryState.Settings;
         StopCoroutine("ImportData");
     }

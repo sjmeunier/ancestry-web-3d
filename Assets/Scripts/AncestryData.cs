@@ -6,6 +6,7 @@ using GedcomLib;
 using System;
 using Assets;
 using System.Text;
+using System.IO;
 
 public class AncestryData
 {
@@ -25,7 +26,7 @@ public class AncestryData
 	
 	private static int highestDepth = 0;
 	
-	private static string DataFilename = "Data.dat";
+	private static string GedcomDataFilename = "GedcomData.dat";
 	private static string ProcessedDataFilename = "GameData.data";
 		
     private static void ProcessAncestor(string individualId, string childId, long ahnentafelNumber, int depth)
@@ -445,6 +446,46 @@ public class AncestryData
 	
 	public static void SaveGedcomData()
 	{
-		
+        if (File.Exists(GedcomDataFilename))
+            File.Delete(GedcomDataFilename);
+        using (BinaryWriter writer = new BinaryWriter(new FileStream(GedcomDataFilename, FileMode.OpenOrCreate)))
+        {
+            writer.Write(gedcomIndividuals.Values.Count);
+            foreach (GedcomIndividual individual in gedcomIndividuals.Values)
+            {
+                writer.Write(individual.Id);
+                individual.WriteToStream(writer);
+            }
+            writer.Write(gedcomFamilies.Values.Count);
+            foreach (GedcomFamily family in gedcomFamilies.Values)
+            {
+                writer.Write(family.Id);
+                family.WriteToStream(writer);
+            }
+        }
 	}
+
+    public static void LoadGedcomData()
+    {
+        gedcomFamilies = new Dictionary<string, GedcomFamily>();
+        gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
+
+        if (!File.Exists(GedcomDataFilename))
+            return;
+
+        using (BinaryReader reader = new BinaryReader(new FileStream(GedcomDataFilename, FileMode.OpenOrCreate)))
+        {
+            int recordCount = reader.ReadInt32();
+            for(int i = 0; i < recordCount; i++)
+            {
+                gedcomIndividuals.Add(reader.ReadString(), new GedcomIndividual(reader));
+            }
+
+            recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                gedcomFamilies.Add(reader.ReadString(), new GedcomFamily(reader));
+            }
+        }
+    }
 }
