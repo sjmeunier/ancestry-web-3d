@@ -547,11 +547,11 @@ public class AncestryData
 
     public static void LoadProcessedData()
     {
-        Dictionary<string, AncestorIndividual> ancestors = new Dictionary<string, AncestorIndividual>();
-        Dictionary<string, IndividualSphereData> ancestorGameData = new Dictionary<string, IndividualSphereData>();
-        List<Vector3[]> descentMaleLineVectors = new List<Vector3[]>();
-        List<Vector3[]> descentFemaleLineVectors = new List<Vector3[]>();
-        List<Vector3[]> marriageLineVectors = new List<Vector3[]>();
+        ancestors = new Dictionary<string, AncestorIndividual>();
+        ancestorGameData = new Dictionary<string, IndividualSphereData>();
+        descentMaleLineVectors = new List<Vector3[]>();
+        descentFemaleLineVectors = new List<Vector3[]>();
+        marriageLineVectors = new List<Vector3[]>();
 
         if (!File.Exists(ProcessedDataFilename))
             return;
