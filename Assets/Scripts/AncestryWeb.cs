@@ -13,6 +13,7 @@ public class AncestryWeb : MonoBehaviour
 
     private GameObject[] individualSpheres;
 
+    public static bool loadedData = false;
     public static bool loadedObjects = false;
     private string loadingText = "Loading...";
 
@@ -29,12 +30,30 @@ public class AncestryWeb : MonoBehaviour
 
     public enum AncestryState
     {
+        LoadingGedcom,
+        LoadingData,
         Settings,
 		ImportScreen,
 		ImportingData,
         InitialisingData,
         InitialisingObjects,
+        UpdatingObjects,
         Main
+    }
+
+    private void UpdateVisiblity()
+    {
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("DescentMaleLine"))
+            line.GetComponentInChildren<MeshRenderer>().enabled = Settings.ShowDescentLines;
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("DescentFemaleLine"))
+            line.GetComponentInChildren<MeshRenderer>().enabled = Settings.ShowDescentLines;
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("MarriageLine"))
+            line.GetComponentInChildren<MeshRenderer>().enabled = Settings.ShowMarriageLines;
+
+        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
+            individualSphere.transform.GetChild(1).GetComponent<TextMesh>().GetComponentInChildren<MeshRenderer>().enabled = Settings.ShowNames;
+        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
+            individualSphere.transform.GetChild(1).GetComponent<TextMesh>().GetComponentInChildren<MeshRenderer>().enabled = Settings.ShowNames;
     }
 
     private void CreateGameObjects()
@@ -48,10 +67,7 @@ public class AncestryWeb : MonoBehaviour
             individualSpheres[i].transform.GetChild(0).GetComponent<Renderer>().material.color = data.MaterialColor;
             individualSpheres[i].transform.localScale = new Vector3(data.SphereRadius, data.SphereRadius, data.SphereRadius);
 
-			if (Settings.ShowNames)
-				individualSpheres[i].transform.GetChild(1).GetComponent<TextMesh>().text = data.Text;
-			else
-				individualSpheres[i].transform.GetChild(1).GetComponent<TextMesh>().text = "";
+			individualSpheres[i].transform.GetChild(1).GetComponent<TextMesh>().text = data.Text;
 			
 			if (data.SphereRadius > 1)
 				individualSpheres[i].transform.GetChild(1).transform.localScale = new Vector3(1f / data.SphereRadius, 1f / data.SphereRadius, 1f / data.SphereRadius);
@@ -62,29 +78,22 @@ public class AncestryWeb : MonoBehaviour
 
         }
 
-        if (Settings.ShowDescentLines)
+        foreach (var line in AncestryData.descentMaleLineVectors)
         {
-            foreach (var line in AncestryData.descentMaleLineVectors)
-            {
-                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MaleLineCylinder");
-            };
+            CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MaleLineCylinder", "DescentMaleLine");
+        };
 
-            foreach (var line in AncestryData.descentFemaleLineVectors)
-            {
-                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "FemaleLineCylinder");
-            };
-        }
-
-        if (Settings.ShowMarriageLines)
+        foreach (var line in AncestryData.descentFemaleLineVectors)
         {
-            foreach (var line in AncestryData.marriageLineVectors)
-            {
-                CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MarriageLineCylinder");
-            };
-        }
+            CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "FemaleLineCylinder", "DescentFemaleLine");
+        };
+        foreach (var line in AncestryData.marriageLineVectors)
+        {
+            CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MarriageLineCylinder", "MarriageLine");
+        };
     }
 
-    private void CreateCylinderBetweenPoints(Vector3 start, Vector3 end, float width, string cylinderName)
+    private void CreateCylinderBetweenPoints(Vector3 start, Vector3 end, float width, string cylinderName, string tag)
     {
         var offset = end - start;
         var scale = new Vector3(width, offset.magnitude / 2.0f, width);
@@ -94,6 +103,7 @@ public class AncestryWeb : MonoBehaviour
         GameObject cylinder = (GameObject)Instantiate(Resources.Load(cylinderName), position, Quaternion.identity);
         cylinder.transform.up = offset;
         cylinder.transform.localScale = scale;
+        cylinder.tag = tag;
 
     }
 
@@ -104,7 +114,14 @@ public class AncestryWeb : MonoBehaviour
 			GameObject.DestroyImmediate(individualSphere);
 		foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
 			GameObject.DestroyImmediate(individualSphere);
-	}
+
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("DescentMaleLine"))
+            GameObject.DestroyImmediate(line);
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("DescentFemaleLine"))
+            GameObject.DestroyImmediate(line);
+        foreach (GameObject line in GameObject.FindGameObjectsWithTag("MarriageLine"))
+            GameObject.DestroyImmediate(line);
+    }
 
     public static void ShowSettings()
     {
@@ -123,6 +140,13 @@ public class AncestryWeb : MonoBehaviour
         AncestryData.gedcomFamilies = new Dictionary<string, GedcomFamily>();
         AncestryData.gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
         Settings.LoadSettings();
+        AncestryData.LoadGedcomData();
+        AncestryData.LoadProcessedData();
+        if (AncestryData.ancestors.Count > 0)
+            loadedData = true;
+        else
+            loadedData = false;
+
         ancestryState = AncestryState.Settings;
 
 		if (string.IsNullOrEmpty(Settings.CurrentFolder))
@@ -139,6 +163,7 @@ public class AncestryWeb : MonoBehaviour
 
     }
 
+
     private IEnumerator InitData()
     {
         loadingText = "Initialising ancestors...";
@@ -150,6 +175,7 @@ public class AncestryWeb : MonoBehaviour
         StopCoroutine("InitData");
     }
 
+    
     private IEnumerator InitObjects()
     {
         loadingText = "Initialising objects...";
@@ -158,9 +184,20 @@ public class AncestryWeb : MonoBehaviour
         DeleteGameObjects();
         AncestryData.InitialiseAncestors();
         CreateGameObjects();
+        UpdateVisiblity();
+        AncestryData.SaveProcessedDataFile();
         ancestryState = AncestryState.Main;
         loadedObjects = true;
         StopCoroutine("InitObjects");
+    }
+
+    private IEnumerator UpdateObjects()
+    {
+        loadingText = "Updating objects...";
+        yield return new WaitForSeconds(0.25f);
+        UpdateVisiblity();
+        ancestryState = AncestryState.Main;
+        StopCoroutine("UpdateObjects");
     }
 
     private IEnumerator ImportData()
@@ -170,6 +207,7 @@ public class AncestryWeb : MonoBehaviour
         loadedObjects = false;
 		DeleteGameObjects();
 		AncestryData.ImportGedcom(GedcomFilename);
+        AncestryData.SaveGedcomData();
         ancestryState = AncestryState.Settings;
         StopCoroutine("ImportData");
     }
@@ -213,13 +251,18 @@ public class AncestryWeb : MonoBehaviour
             loader.draw(loadingText);
             StartCoroutine("InitObjects");
         }
+        else if (ancestryState == AncestryState.UpdatingObjects)
+        {
+            loader.draw(loadingText);
+            StartCoroutine("UpdateObjects");
+        }
         else if (ancestryState == AncestryState.Main)
         {
-            if (AncestryData.selectedIndividualId != null && AncestryData.selectedIndividual.HasValue)
+            if (AncestryData.selectedIndividualId != null && AncestryData.selectedIndividual != null)
             {
                 GUILayout.BeginArea(new Rect(10f, 10f, Screen.width * 0.3f, Screen.height - 20f));
                 GUILayout.BeginVertical("box");
-                GUILayout.Label(AncestryData.selectedIndividual.Value.FullSummary);
+                GUILayout.Label(AncestryData.selectedIndividual.FullSummary);
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
             }

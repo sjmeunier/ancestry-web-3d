@@ -6,6 +6,7 @@ using GedcomLib;
 using System;
 using Assets;
 using System.Text;
+using System.IO;
 
 public class AncestryData
 {
@@ -18,15 +19,15 @@ public class AncestryData
     public static List<Vector3[]> descentFemaleLineVectors = new List<Vector3[]>();
     public static List<Vector3[]> marriageLineVectors = new List<Vector3[]>();
     public static string selectedIndividualId = null;
-    public static AncestorIndividual? selectedIndividual = null;
+    public static AncestorIndividual selectedIndividual = null;
 	
     private static Dictionary<int, List<AncestorIndividual>> optimizedAncestors = new Dictionary<int, List<AncestorIndividual>>();
     private static Dictionary<int, int> ancestorGenerationCount = new Dictionary<int, int>();
 	
 	private static int highestDepth = 0;
 	
-	private static string DataFilename = "Data.dat";
-	private static string ProcessedDataFilename = "GameData.data";
+	private static string GedcomDataFilename = "GedcomData.dat";
+	private static string ProcessedDataFilename = "GameData.dat";
 		
     private static void ProcessAncestor(string individualId, string childId, long ahnentafelNumber, int depth)
     {
@@ -56,19 +57,14 @@ public class AncestryData
 
             individual.AhnentafelNumber = ahnentafelNumber;
 
-            GedcomFamily? gedcomFamily = null;
             foreach (GedcomFamily family in gedcomFamilies.Values)
             {
                 if (family.Children.Contains(individualId))
                 {
-                    gedcomFamily = family;
+                    individual.FatherId = family.HusbandId;
+                    individual.MotherId = family.WifeId;
                     break;
                 }
-            }
-            if (gedcomFamily != null)
-            {
-                individual.FatherId = gedcomFamily.Value.HusbandId;
-                individual.MotherId = gedcomFamily.Value.WifeId;
             }
 
             ancestors.Add(individualId, individual);
@@ -389,7 +385,7 @@ public class AncestryData
 
             foreach (AncestorIndividual individual in optimizedAncestors[i].OrderBy(x => x.AhnentafelNumber))
             {
-				IndividualSphereData data = new IndividualSphereData();
+				IndividualSphereData data = new IndividualSphereData(individual.Id);
 				
 				data.Position = new Vector3((float)(radius * Math.Cos(angle)), individual.HighestGeneration * 8 * Settings.ScaleFactor, (float)(radius * Math.Sin(angle)));
                 if (string.IsNullOrEmpty(individual.FatherId) && string.IsNullOrEmpty(individual.MotherId))
@@ -450,6 +446,149 @@ public class AncestryData
 	
 	public static void SaveGedcomData()
 	{
-		
+        if (File.Exists(GedcomDataFilename))
+            File.Delete(GedcomDataFilename);
+        using (BinaryWriter writer = new BinaryWriter(new FileStream(GedcomDataFilename, FileMode.OpenOrCreate)))
+        {
+            writer.Write(gedcomIndividuals.Values.Count);
+            foreach (GedcomIndividual individual in gedcomIndividuals.Values)
+            {
+                writer.Write(individual.Id);
+                individual.WriteToStream(writer);
+            }
+            writer.Write(gedcomFamilies.Values.Count);
+            foreach (GedcomFamily family in gedcomFamilies.Values)
+            {
+                writer.Write(family.Id);
+                family.WriteToStream(writer);
+            }
+        }
 	}
+
+    public static void LoadGedcomData()
+    {
+        gedcomFamilies = new Dictionary<string, GedcomFamily>();
+        gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
+
+        if (!File.Exists(GedcomDataFilename))
+            return;
+
+        using (BinaryReader reader = new BinaryReader(new FileStream(GedcomDataFilename, FileMode.OpenOrCreate)))
+        {
+            int recordCount = reader.ReadInt32();
+            for(int i = 0; i < recordCount; i++)
+            {
+                gedcomIndividuals.Add(reader.ReadString(), new GedcomIndividual(reader));
+            }
+
+            recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                gedcomFamilies.Add(reader.ReadString(), new GedcomFamily(reader));
+            }
+        }
+    }
+
+    public static void SaveProcessedDataFile()
+    {
+        if (File.Exists(ProcessedDataFilename))
+            File.Delete(ProcessedDataFilename);
+        using (BinaryWriter writer = new BinaryWriter(new FileStream(ProcessedDataFilename, FileMode.OpenOrCreate)))
+        {
+            writer.Write(highestDepth);
+            writer.Write(ancestors.Values.Count);
+            foreach (AncestorIndividual individual in ancestors.Values)
+            {
+                writer.Write(individual.Id);
+                individual.WriteToStream(writer);
+            }
+
+            writer.Write(ancestorGameData.Values.Count);
+            foreach (IndividualSphereData individual in ancestorGameData.Values)
+            {
+                writer.Write(individual.Id);
+                individual.WriteToStream(writer);
+            }
+
+            writer.Write(descentMaleLineVectors.Count);
+            foreach (Vector3[] line in descentMaleLineVectors)
+            {
+                writer.Write(line[0].x);
+                writer.Write(line[0].y);
+                writer.Write(line[0].z);
+                writer.Write(line[1].x);
+                writer.Write(line[1].y);
+                writer.Write(line[1].z);
+            }
+
+            writer.Write(descentFemaleLineVectors.Count);
+            foreach (Vector3[] line in descentFemaleLineVectors)
+            {
+                writer.Write(line[0].x);
+                writer.Write(line[0].y);
+                writer.Write(line[0].z);
+                writer.Write(line[1].x);
+                writer.Write(line[1].y);
+                writer.Write(line[1].z);
+            }
+
+            writer.Write(marriageLineVectors.Count);
+            foreach (Vector3[] line in marriageLineVectors)
+            {
+                writer.Write(line[0].x);
+                writer.Write(line[0].y);
+                writer.Write(line[0].z);
+                writer.Write(line[1].x);
+                writer.Write(line[1].y);
+                writer.Write(line[1].z);
+            }
+        }
+    }
+
+    public static void LoadProcessedData()
+    {
+        ancestors = new Dictionary<string, AncestorIndividual>();
+        ancestorGameData = new Dictionary<string, IndividualSphereData>();
+        descentMaleLineVectors = new List<Vector3[]>();
+        descentFemaleLineVectors = new List<Vector3[]>();
+        marriageLineVectors = new List<Vector3[]>();
+
+        if (!File.Exists(ProcessedDataFilename))
+            return;
+
+        using (BinaryReader reader = new BinaryReader(new FileStream(ProcessedDataFilename, FileMode.OpenOrCreate)))
+        {
+            highestDepth = reader.ReadInt32();
+
+            int recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                ancestors.Add(reader.ReadString(), new AncestorIndividual(reader));
+            }
+
+            recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                ancestorGameData.Add(reader.ReadString(), new IndividualSphereData(reader));
+            }
+
+            recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                descentMaleLineVectors.Add(new Vector3[2] {new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
+            }
+
+            recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                descentFemaleLineVectors.Add(new Vector3[2] { new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
+            }
+
+            recordCount = reader.ReadInt32();
+            for (int i = 0; i < recordCount; i++)
+            {
+                marriageLineVectors.Add(new Vector3[2] { new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
+            }
+        }
+    }
 }
