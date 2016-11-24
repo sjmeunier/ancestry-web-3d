@@ -1,4 +1,5 @@
 using Assets;
+using System;
 using System.IO;
 using UnityEngine;
 
@@ -12,6 +13,8 @@ public class Settings : MonoBehaviour
     public static float ScaleFactor = 1f;
 
     public static string CurrentFolder = "";
+    public static DateTime LastImportDate = new DateTime(0);
+    public static string LastImportFilename = "";
     public static bool WebMode = false;
     public static string WebURL = "https://sjmeunier.github.io/AncestryWeb3D_Web/sample.ged";
     private static string saveFileName = "settings.dat";
@@ -29,6 +32,8 @@ public class Settings : MonoBehaviour
             writer.Write(ShowMarriageLines);
             writer.Write(ShowNames);
             writer.Write(CurrentFolder);
+            writer.Write(LastImportDate.Ticks);
+            writer.Write(LastImportFilename);
         }
     }
 
@@ -47,6 +52,8 @@ public class Settings : MonoBehaviour
                 ShowMarriageLines = reader.ReadBoolean();
                 ShowNames = reader.ReadBoolean();
                 CurrentFolder = reader.ReadString();
+                LastImportDate = new DateTime(reader.ReadInt64());
+                LastImportFilename = reader.ReadString();
             }
         }
     }

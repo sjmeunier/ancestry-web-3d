@@ -230,6 +230,8 @@ public class AncestryWeb : MonoBehaviour
                 else
                 {
                     AncestryWeb.GedcomFilename = fb.outputFile.FullName;
+                    Settings.LastImportFilename = AncestryWeb.GedcomFilename;
+                    Settings.LastImportDate = DateTime.Now;
                     Settings.CurrentFolder = fb.outputFile.Directory.FullName;
                     Settings.SaveSettings();
                     ancestryState = AncestryState.ImportingData;

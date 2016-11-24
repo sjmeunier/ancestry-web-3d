@@ -463,6 +463,7 @@ public class AncestryData
                 family.WriteToStream(writer);
             }
         }
+        
 	}
 
     public static void LoadGedcomData()

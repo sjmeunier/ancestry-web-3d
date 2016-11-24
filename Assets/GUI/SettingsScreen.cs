@@ -20,7 +20,6 @@ public class SettingsScreen {
 
     private static string oldIndividual = "";
     private static int oldMaxGenerations = 0;
-    private static bool oldShowNames = true;
 
 	//Constructors
 	public SettingsScreen(){
@@ -46,6 +45,12 @@ public class SettingsScreen {
         GUILayout.BeginHorizontal();
         GUILayout.Label(string.Format("Individuals: {0}", AncestryData.gedcomIndividuals.Values.Count) );
         GUILayout.Label(string.Format("Families: {0}", AncestryData.gedcomFamilies.Values.Count) );
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        if (Settings.LastImportDate.Ticks == 0 || AncestryData.gedcomIndividuals.Values.Count == 0)
+            GUILayout.Label("No imported data found");
+        else
+            GUILayout.Label(string.Format("Last imported {0}: {1}", Settings.LastImportDate.Date.ToShortDateString(), Settings.LastImportFilename));
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         bool importClicked = GUILayout.Button("Import New Data");
@@ -114,7 +119,6 @@ public class SettingsScreen {
 
             SettingsScreen.oldIndividual = Settings.RootIndividualId;
             SettingsScreen.oldMaxGenerations = Settings.MaxDepth;
-            SettingsScreen.oldShowNames = Settings.ShowNames;
         }
 		
 	}
