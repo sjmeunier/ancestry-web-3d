@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Settings : MonoBehaviour
 {
-    public static string RootIndividualId = "I7952";
+    public static string RootIndividualId = "I0001";
     public static int MaxDepth = 50;
     public static bool ShowDescentLines = true;
     public static bool ShowMarriageLines = false;
@@ -15,13 +15,12 @@ public class Settings : MonoBehaviour
     public static string CurrentFolder = "";
     public static DateTime LastImportDate = new DateTime(0);
     public static string LastImportFilename = "";
-    public static bool WebMode = false;
     public static string WebURL = "https://sjmeunier.github.io/AncestryWeb3D_Web/sample.ged";
     private static string saveFileName = "settings.dat";
 
     public static void SaveSettings()
     {
-        if (WebMode)
+        if (Application.isWebPlayer)
             return;
 
         using (BinaryWriter writer = new BinaryWriter(new FileStream(saveFileName, FileMode.Create)))
@@ -39,7 +38,7 @@ public class Settings : MonoBehaviour
 
     public static void LoadSettings()
     {
-        if (WebMode)
+        if (Application.isWebPlayer)
             return;
 
         if (File.Exists(saveFileName))

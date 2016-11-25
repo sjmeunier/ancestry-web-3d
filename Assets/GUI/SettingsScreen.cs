@@ -47,14 +47,20 @@ public class SettingsScreen {
         GUILayout.Label(string.Format("Families: {0}", AncestryData.gedcomFamilies.Values.Count) );
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        if (Settings.LastImportDate.Ticks == 0 || AncestryData.gedcomIndividuals.Values.Count == 0)
+        if (Application.isWebPlayer == true)
+            GUILayout.Label("Web demo mode: Imported from web");
+        else if (Settings.LastImportDate.Ticks == 0 || AncestryData.gedcomIndividuals.Values.Count == 0)
             GUILayout.Label("No imported data found");
         else
             GUILayout.Label(string.Format("Last imported {0}: {1}", Settings.LastImportDate.Date.ToShortDateString(), Settings.LastImportFilename));
         GUILayout.EndHorizontal();
-        GUILayout.BeginHorizontal();
-        bool importClicked = GUILayout.Button("Import New Data");
-        GUILayout.EndHorizontal();		
+        bool importClicked = false;
+        if (Application.isWebPlayer == false)
+        {
+            GUILayout.BeginHorizontal();
+            importClicked = GUILayout.Button("Import New Data");
+            GUILayout.EndHorizontal();
+        }	
         GUILayout.EndVertical();
 		
         GUILayout.BeginVertical("box");

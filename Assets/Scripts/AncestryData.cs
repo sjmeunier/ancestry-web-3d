@@ -348,7 +348,15 @@ public class AncestryData
         gedcomFamilies = parser.gedcomFamilies;
         gedcomIndividuals = parser.gedcomIndividuals;
     }
-	
+
+    public static void ImportWebGedcom(string gedcomUrl)
+    {
+        GedcomParser parser = new GedcomParser();
+        parser.ParseWeb(gedcomUrl);
+        gedcomFamilies = parser.gedcomFamilies;
+        gedcomIndividuals = parser.gedcomIndividuals;
+    }
+
     public static void InitialiseAncestors()
     {
         ancestors = new Dictionary<string, AncestorIndividual>();
@@ -446,6 +454,9 @@ public class AncestryData
 	
 	public static void SaveGedcomData()
 	{
+        if (Application.isWebPlayer)
+            return;
+
         if (File.Exists(GedcomDataFilename))
             File.Delete(GedcomDataFilename);
         using (BinaryWriter writer = new BinaryWriter(new FileStream(GedcomDataFilename, FileMode.OpenOrCreate)))
@@ -470,6 +481,11 @@ public class AncestryData
     {
         gedcomFamilies = new Dictionary<string, GedcomFamily>();
         gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
+        if (Application.isWebPlayer)
+        {
+            ImportWebGedcom(Settings.WebURL);
+            return;
+        }
 
         if (!File.Exists(GedcomDataFilename))
             return;
@@ -492,6 +508,9 @@ public class AncestryData
 
     public static void SaveProcessedDataFile()
     {
+        if (Application.isWebPlayer)
+            return;
+
         if (File.Exists(ProcessedDataFilename))
             File.Delete(ProcessedDataFilename);
         using (BinaryWriter writer = new BinaryWriter(new FileStream(ProcessedDataFilename, FileMode.OpenOrCreate)))
@@ -548,6 +567,9 @@ public class AncestryData
 
     public static void LoadProcessedData()
     {
+        if (Application.isWebPlayer)
+            return;
+
         ancestors = new Dictionary<string, AncestorIndividual>();
         ancestorGameData = new Dictionary<string, IndividualSphereData>();
         descentMaleLineVectors = new List<Vector3[]>();
