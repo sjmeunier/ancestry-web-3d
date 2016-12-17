@@ -15,12 +15,13 @@ public class Settings : MonoBehaviour
     public static string CurrentFolder = "";
     public static DateTime LastImportDate = new DateTime(0);
     public static string LastImportFilename = "";
-    public static string WebURL = "https://sjmeunier.github.io/AncestryWeb3D_Web/sample.ged";
     private static string saveFileName = "settings.dat";
+
+    public static bool webMode = true;
 
     public static void SaveSettings()
     {
-        if (Application.isWebPlayer)
+        if (webMode)
             return;
 
         using (BinaryWriter writer = new BinaryWriter(new FileStream(saveFileName, FileMode.Create)))
@@ -38,8 +39,11 @@ public class Settings : MonoBehaviour
 
     public static void LoadSettings()
     {
-        if (Application.isWebPlayer)
+        if (webMode)
+        {
+            MaxDepth = 8;
             return;
+        }
 
         if (File.Exists(saveFileName))
         {

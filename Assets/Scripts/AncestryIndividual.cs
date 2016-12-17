@@ -34,6 +34,7 @@ namespace Assets
         public Dictionary<string, HashSet<string>> SummaryChildren;
         public string SummaryFatherName;
         public string SummaryMotherName;
+        public string SummaryRelationship;
 		public string FullSummary;
 
         public AncestorIndividual(string id)
@@ -64,6 +65,7 @@ namespace Assets
             SummarySpouse = new Dictionary<string, string>();
             SummaryMarriage = new Dictionary<string, string>();
             SummaryChildren = new Dictionary<string, HashSet<string>>();
+            SummaryRelationship = "";
 			FullSummary = "";
         }
 
@@ -95,6 +97,7 @@ namespace Assets
             writer.Write(SummaryMotherName);
             writer.Write(SummaryBirthDate);
             writer.Write(SummaryDeathDate);
+            writer.Write(SummaryRelationship);
             writer.Write(FullSummary);
 
             writer.Write(SummarySpouse.Count);
@@ -146,6 +149,7 @@ namespace Assets
             SummaryMotherName = reader.ReadString();
             SummaryBirthDate = reader.ReadString();
             SummaryDeathDate = reader.ReadString();
+            SummaryRelationship = reader.ReadString();
             FullSummary = reader.ReadString();
 
             SummarySpouse = new Dictionary<string, string>();

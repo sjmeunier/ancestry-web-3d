@@ -68,7 +68,7 @@ public class AncestryData
             }
 
             ancestors.Add(individualId, individual);
-            if (depth <= Settings.MaxDepth)
+            if (depth < Settings.MaxDepth)
             {
                 if (!string.IsNullOrEmpty(individual.FatherId))
                     ProcessAncestor(individual.FatherId, individualId, 2 * ahnentafelNumber, depth + 1);
@@ -117,7 +117,38 @@ public class AncestryData
         }
 
     }
-	
+
+    private static string CalculateRelationship(int generations, bool isMale)
+    {
+        if (generations == 0)
+            return String.Empty;
+
+        string relationship = "";
+        if (isMale)
+        {
+            if (generations == 1)
+                relationship = "Father";
+            else if (generations == 2)
+                relationship = "Grandfather";
+            else if (generations == 3)
+                relationship = "Great-grandfather";
+            else
+                relationship = string.Format("Great({0})-grandfather", generations - 2);
+        }
+        else
+        {
+            if (generations == 1)
+                relationship = "Mother";
+            else if (generations == 2)
+                relationship = "Grandmother";
+            else if (generations == 3)
+                relationship = "Great-grandmother";
+            else
+                relationship = string.Format("Great({0})-grandmother", generations - 2);
+        }
+        return relationship;
+    }
+
     private static void CalculateSummaryData()
     {
         List<string> keys = new List<string>(ancestors.Keys);
@@ -132,6 +163,8 @@ public class AncestryData
                 individual.SummaryName += " " + individual.Surname;
             if (!string.IsNullOrEmpty(individual.Suffix))
                 individual.SummaryName += " (" + individual.Suffix + ")";
+
+            individual.SummaryRelationship = CalculateRelationship(individual.LowestGeneration, individual.Sex.ToUpper() == "M");
 
             string born = ProcessDate(individual.BirthDate, false);
             if (born != "?" || !string.IsNullOrEmpty(individual.BirthPlace.Trim()))
@@ -219,8 +252,9 @@ public class AncestryData
             StringBuilder sb = new StringBuilder();
 			sb.Append(individual.Id.Replace("@", "") + "\r\n");
 			sb.Append("Ahnentafel Number: " + individual.AhnentafelNumber.ToString() + "\r\n");
-			sb.Append(individual.SummaryName + "\r\n");
-			if (!string.IsNullOrEmpty(individual.SummaryBirthDate))
+			sb.Append(individual.SummaryName);
+            sb.Append("\r\n" + individual.SummaryRelationship + "\r\n");
+            if (!string.IsNullOrEmpty(individual.SummaryBirthDate))
 				sb.Append("\r\n" + individual.SummaryBirthDate);
 			if (!string.IsNullOrEmpty(individual.SummaryDeathDate))
 				sb.Append("\r\n" + individual.SummaryDeathDate);
@@ -349,10 +383,11 @@ public class AncestryData
         gedcomIndividuals = parser.gedcomIndividuals;
     }
 
-    public static void ImportWebGedcom(string gedcomUrl)
+    public static void ImportResourceGedcom()
     {
         GedcomParser parser = new GedcomParser();
-        parser.ParseWeb(gedcomUrl);
+        TextAsset gedcomFile = (TextAsset)Resources.Load("GedcomData");
+        parser.ParseText(gedcomFile.text);
         gedcomFamilies = parser.gedcomFamilies;
         gedcomIndividuals = parser.gedcomIndividuals;
     }
@@ -454,7 +489,7 @@ public class AncestryData
 	
 	public static void SaveGedcomData()
 	{
-        if (Application.isWebPlayer)
+        if (Settings.webMode)
             return;
 
         if (File.Exists(GedcomDataFilename))
@@ -481,9 +516,9 @@ public class AncestryData
     {
         gedcomFamilies = new Dictionary<string, GedcomFamily>();
         gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
-        if (Application.isWebPlayer)
+        if (Settings.webMode)
         {
-            ImportWebGedcom(Settings.WebURL);
+            ImportResourceGedcom();
             return;
         }
 
@@ -508,7 +543,7 @@ public class AncestryData
 
     public static void SaveProcessedDataFile()
     {
-        if (Application.isWebPlayer)
+        if (Settings.webMode)
             return;
 
         if (File.Exists(ProcessedDataFilename))
@@ -567,7 +602,7 @@ public class AncestryData
 
     public static void LoadProcessedData()
     {
-        if (Application.isWebPlayer)
+        if (Settings.webMode)
             return;
 
         ancestors = new Dictionary<string, AncestorIndividual>();
