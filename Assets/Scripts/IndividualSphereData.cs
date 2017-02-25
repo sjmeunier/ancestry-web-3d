@@ -11,7 +11,9 @@ namespace Assets
         public Color MaterialColor;
         public float SphereRadius;
         public string ObjectType;
-		
+        public string Summary;
+
+
         public IndividualSphereData(string id)
         {
             Id = id;
@@ -20,6 +22,7 @@ namespace Assets
             MaterialColor = Color.white;
             SphereRadius = 1;
             ObjectType = "IndividualSphere";
+            Summary = "";
         }
 
         public IndividualSphereData(BinaryReader reader)
@@ -40,6 +43,7 @@ namespace Assets
             writer.Write(MaterialColor.a);
             writer.Write(SphereRadius);
             writer.Write(ObjectType);
+            writer.Write(Summary);
         }
 
         private void ReadFromStream(BinaryReader reader)
@@ -50,6 +54,7 @@ namespace Assets
             MaterialColor = new Color(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
             SphereRadius = reader.ReadSingle();
             ObjectType = reader.ReadString();
+            Summary = reader.ReadString();
         }
     }
 

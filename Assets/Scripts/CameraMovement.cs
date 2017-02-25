@@ -111,22 +111,21 @@ public class CameraMovement : MonoBehaviour
 
         if (!isPanning && !isRotating && !isZooming && AncestryWeb.loadedObjects)
         {
-            if (!string.IsNullOrEmpty(AncestryData.selectedIndividualId))
+            if (!string.IsNullOrEmpty(AncestryGameData.selectedIndividualId))
             {
                 foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
                 {
-                    individualSphere.transform.GetChild(0).GetComponent<Renderer>().material.color = AncestryData.ancestorGameData[AncestryData.selectedIndividualId].MaterialColor;
+                    individualSphere.transform.GetChild(0).GetComponent<Renderer>().material.color = AncestryGameData.ancestorGameData[AncestryGameData.selectedIndividualId].MaterialColor;
                     individualSphere.tag = "Individual";
                 }
             }
-            AncestryData.selectedIndividualId = null;
+            AncestryGameData.selectedIndividualId = null;
             ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 if (hit.collider.name.Contains("Sphere"))
                 {
-                    AncestryData.selectedIndividualId = hit.collider.GetComponentInParent<IndividualSphere>().individualId;
-                    AncestryData.selectedIndividual = AncestryData.ancestors[AncestryData.selectedIndividualId];
+                    AncestryGameData.selectedIndividualId = hit.collider.GetComponentInParent<IndividualSphere>().individualId;
 
                     hit.collider.GetComponentInParent<IndividualSphere>().transform.GetChild(0).GetComponent<Renderer>().material.color = Color.yellow;
                     hit.collider.GetComponentInParent<IndividualSphere>().tag = "Highlighted";

@@ -10,16 +10,7 @@ using System.IO;
 
 public class AncestryData
 {
-	public static Dictionary<string, GedcomIndividual> gedcomIndividuals;
-    public static Dictionary<string, GedcomFamily> gedcomFamilies;
-	
     public static Dictionary<string, AncestorIndividual> ancestors = new Dictionary<string, AncestorIndividual>();
-    public static Dictionary<string, IndividualSphereData> ancestorGameData = new Dictionary<string, IndividualSphereData>();
-    public static List<Vector3[]> descentMaleLineVectors = new List<Vector3[]>();
-    public static List<Vector3[]> descentFemaleLineVectors = new List<Vector3[]>();
-    public static List<Vector3[]> marriageLineVectors = new List<Vector3[]>();
-    public static string selectedIndividualId = null;
-    public static AncestorIndividual selectedIndividual = null;
 	
     private static Dictionary<int, List<AncestorIndividual>> optimizedAncestors = new Dictionary<int, List<AncestorIndividual>>();
     private static Dictionary<int, int> ancestorGenerationCount = new Dictionary<int, int>();
@@ -40,7 +31,7 @@ public class AncestryData
             highestDepth = Math.Max(depth, highestDepth);
 
             AncestorIndividual individual = new AncestorIndividual(individualId);
-            GedcomIndividual gedcomIndividual = gedcomIndividuals[individualId];
+            GedcomIndividual gedcomIndividual = AncestryGameData.gedcomIndividuals[individualId];
 
             individual.GivenName = gedcomIndividual.GivenName.Trim();
             individual.Surname = gedcomIndividual.Surname.Trim();
@@ -57,7 +48,7 @@ public class AncestryData
 
             individual.AhnentafelNumber = ahnentafelNumber;
 
-            foreach (GedcomFamily family in gedcomFamilies.Values)
+            foreach (GedcomFamily family in AncestryGameData.gedcomFamilies.Values)
             {
                 if (family.Children.Contains(individualId))
                 {
@@ -118,37 +109,6 @@ public class AncestryData
 
     }
 
-    private static string CalculateRelationship(int generations, bool isMale)
-    {
-        if (generations == 0)
-            return String.Empty;
-
-        string relationship = "";
-        if (isMale)
-        {
-            if (generations == 1)
-                relationship = "Father";
-            else if (generations == 2)
-                relationship = "Grandfather";
-            else if (generations == 3)
-                relationship = "Great-grandfather";
-            else
-                relationship = string.Format("Great({0})-grandfather", generations - 2);
-        }
-        else
-        {
-            if (generations == 1)
-                relationship = "Mother";
-            else if (generations == 2)
-                relationship = "Grandmother";
-            else if (generations == 3)
-                relationship = "Great-grandmother";
-            else
-                relationship = string.Format("Great({0})-grandmother", generations - 2);
-        }
-        return relationship;
-    }
-
     private static void CalculateSummaryData()
     {
         List<string> keys = new List<string>(ancestors.Keys);
@@ -164,18 +124,18 @@ public class AncestryData
             if (!string.IsNullOrEmpty(individual.Suffix))
                 individual.SummaryName += " (" + individual.Suffix + ")";
 
-            individual.SummaryRelationship = CalculateRelationship(individual.LowestGeneration, individual.Sex.ToUpper() == "M");
+            individual.SummaryRelationship = AncestryUtil.CalculateRelationship(individual.LowestGeneration, individual.Sex.ToUpper() == "M");
 
-            string born = ProcessDate(individual.BirthDate, false);
+            string born = AncestryUtil.ProcessDate(individual.BirthDate, false);
             if (born != "?" || !string.IsNullOrEmpty(individual.BirthPlace.Trim()))
                 individual.SummaryBirthDate = string.Format("b. {0} {1}", born, individual.BirthPlace).Trim();
-            string died = ProcessDate(individual.DiedDate, false);
+            string died = AncestryUtil.ProcessDate(individual.DiedDate, false);
             if (died != "?" || !string.IsNullOrEmpty(individual.DiedPlace.Trim()))
                 individual.SummaryDeathDate = string.Format("d. {0} {1}", died, individual.DiedPlace).Trim();
 
-            if (!string.IsNullOrEmpty(individual.FatherId) && gedcomIndividuals.ContainsKey(individual.FatherId))
+            if (!string.IsNullOrEmpty(individual.FatherId) && AncestryGameData.gedcomIndividuals.ContainsKey(individual.FatherId))
             {
-                GedcomIndividual father = gedcomIndividuals[individual.FatherId];
+                GedcomIndividual father = AncestryGameData.gedcomIndividuals[individual.FatherId];
                 individual.SummaryFatherName = father.GivenName;
                 if (!string.IsNullOrEmpty(father.Prefix))
                     individual.SummaryFatherName += " " + father.Prefix;
@@ -183,15 +143,15 @@ public class AncestryData
                     individual.SummaryFatherName += " " + father.Surname;
                 if (!string.IsNullOrEmpty(father.Suffix))
                     individual.SummaryFatherName += " (" + father.Suffix + ")";
-                individual.SummaryFatherName += " " + GenerateBirthDeathDate(father, true);
+                individual.SummaryFatherName += " " + AncestryUtil.GenerateBirthDeathDate(father, true);
             } else
             {
                 individual.SummaryFatherName = "Unknown";
             }
 
-            if (!string.IsNullOrEmpty(individual.MotherId) && gedcomIndividuals.ContainsKey(individual.MotherId))
+            if (!string.IsNullOrEmpty(individual.MotherId) && AncestryGameData.gedcomIndividuals.ContainsKey(individual.MotherId))
             {
-                GedcomIndividual mother = gedcomIndividuals[individual.MotherId];
+                GedcomIndividual mother = AncestryGameData.gedcomIndividuals[individual.MotherId];
                 individual.SummaryMotherName = mother.GivenName;
                 if (!string.IsNullOrEmpty(mother.Prefix))
                     individual.SummaryMotherName += " " + mother.Prefix;
@@ -199,18 +159,18 @@ public class AncestryData
                     individual.SummaryMotherName += " " + mother.Surname;
                 if (!string.IsNullOrEmpty(mother.Suffix))
                     individual.SummaryMotherName += " (" + mother.Suffix + ")";
-                individual.SummaryMotherName += " " + GenerateBirthDeathDate(mother, true);
+                individual.SummaryMotherName += " " + AncestryUtil.GenerateBirthDeathDate(mother, true);
             }
             else
             {
                 individual.SummaryMotherName = "Unknown";
             }
 
-            foreach (GedcomFamily family in gedcomFamilies.Values.Where(x => x.WifeId == individual.Id || x.HusbandId == individual.Id))
+            foreach (GedcomFamily family in AncestryGameData.gedcomFamilies.Values.Where(x => x.WifeId == individual.Id || x.HusbandId == individual.Id))
             {
                 string spouseId = (family.WifeId == individual.Id) ? family.HusbandId : family.WifeId;
-                if (gedcomIndividuals.ContainsKey(spouseId)) {
-                    GedcomIndividual spouse = gedcomIndividuals[spouseId];
+                if (AncestryGameData.gedcomIndividuals.ContainsKey(spouseId)) {
+                    GedcomIndividual spouse = AncestryGameData.gedcomIndividuals[spouseId];
                     string summary = spouse.GivenName;
                     if (!string.IsNullOrEmpty(spouse.Prefix))
                         summary += " " + spouse.Prefix;
@@ -218,24 +178,24 @@ public class AncestryData
                         summary += " " + spouse.Surname;
                     if (!string.IsNullOrEmpty(spouse.Suffix))
                         summary += " (" + spouse.Suffix + ")";
-                    summary += " " + GenerateBirthDeathDate(spouse, true);
+                    summary += " " + AncestryUtil.GenerateBirthDeathDate(spouse, true);
                     individual.SummarySpouse.Add(family.Id, summary);
                 } else
                 {
                     individual.SummarySpouse.Add(family.Id, "Unknown");
                 }
 
-                string married = ProcessDate(family.MarriageDate, false);
+                string married = AncestryUtil.ProcessDate(family.MarriageDate, false);
                 if (married != "?" || !string.IsNullOrEmpty(family.MarriagePlace.Trim()))
                     individual.SummaryMarriage.Add(family.Id, string.Format("m. {0} {1}", married, family.MarriagePlace).Trim());
 
                 HashSet<string> childSummaries = new HashSet<string>();
                 foreach (string childId in family.Children)
                 {
-                    if (!gedcomIndividuals.ContainsKey(childId))
+                    if (!AncestryGameData.gedcomIndividuals.ContainsKey(childId))
                         continue;
 
-                    GedcomIndividual child = gedcomIndividuals[childId];
+                    GedcomIndividual child = AncestryGameData.gedcomIndividuals[childId];
                     string summary = child.GivenName;
                     if (!string.IsNullOrEmpty(child.Prefix))
                         summary += " " + child.Prefix;
@@ -243,7 +203,7 @@ public class AncestryData
                         summary += " " + child.Surname;
                     if (!string.IsNullOrEmpty(child.Suffix))
                         summary += " (" + child.Suffix + ")";
-                    summary += " " + GenerateBirthDeathDate(child, true);
+                    summary += " " + AncestryUtil.GenerateBirthDeathDate(child, true);
                     childSummaries.Add(summary);
                 }
                 individual.SummaryChildren.Add(family.Id, childSummaries);
@@ -284,103 +244,12 @@ public class AncestryData
         }
     }
 	
-	private static string ProcessDate(string date, bool onlyYear)
-    {
-        if (string.IsNullOrEmpty(date))
-        {
-            date = "?";
-        }
-        else
-        {
-            if (onlyYear)
-            {
-                string[] dateArr = date.Split(new char[] { ' ' });
-                if (dateArr.Length > 1)
-                {
-                    date = "";
-                    if (dateArr[0] == "ABT")
-                        date = "c";
-                    else if (dateArr[0] == "AFT")
-                        date = ">";
-                    else if (dateArr[0] == "BEF")
-                        date = "<";
-                    date += dateArr[dateArr.Length - 1];
-
-                    int year = 0;
-                    Int32.TryParse(dateArr[dateArr.Length - 1], out year);
-                }
-            }
-            else
-            {
-                if (date.Contains("ABT"))
-                    date = date.Replace("ABT", "c");
-                else if (date.Contains("AFT"))
-                    date = date.Replace("AFT", ">");
-                else if (date.Contains("BEF"))
-                    date = date.Replace("BEF", "<");
-
-                date = date.Replace("JAN", "Jan").Replace("FEB", "Feb").Replace("MAR", "Mar").Replace("APR", "Apr").Replace("MAY", "May").Replace("JUN", "Jun")
-                            .Replace("JUL", "Jul").Replace("AUG", "Aug").Replace("SEP", "Sep").Replace("OCT", "Oct").Replace("NOV", "Nov").Replace("DEC", "Dec");
-            }
-        }
-
-        return date;
-    }
-
-    private static string GenerateBirthDeathDate(AncestorIndividual individual, bool onlyYear)
-    {
-        string born = ProcessDate(individual.BirthDate, onlyYear);
-        string died = ProcessDate(individual.DiedDate, onlyYear);
-        if (born != "?" || died != "?")
-        {
-            if (born == "?")
-                return string.Format("(d.{0})", died);
-            else if (died == "?")
-                return string.Format("(b.{0})", born);
-            else
-                return string.Format("(b.{0}, d.{1})", born, died);
-        }
-        return string.Empty;
-    }
-
-    private static string GenerateBirthDeathDate(GedcomIndividual individual, bool onlyYear)
-    {
-        string born = ProcessDate(individual.BirthDate, onlyYear);
-        string died = ProcessDate(individual.DiedDate, onlyYear);
-        if (born != "?" || died != "?")
-        {
-            if (born == "?")
-                return string.Format("(d.{0})", died);
-            else if (died == "?")
-                return string.Format("(b.{0})", born);
-            else
-                return string.Format("(b.{0}, d.{1})", born, died);
-        }
-        return string.Empty;
-    }
-
-	public static string GenerateName(string individualId)
-    {
-        if (!gedcomIndividuals.ContainsKey(individualId))
-            return string.Empty;
-
-        GedcomIndividual individual = gedcomIndividuals[individualId];
-        string name = individual.GivenName;
-        if (!string.IsNullOrEmpty(individual.Prefix))
-            name += " " + individual.Prefix;
-        if (!string.IsNullOrEmpty(individual.Surname))
-            name += " " + individual.Surname;
-        if (!string.IsNullOrEmpty(individual.Suffix))
-            name += " (" + individual.Suffix + ")";
-        return name;
-    }
-	
 	public static void ImportGedcom(string gedcomFilename)
     {
         GedcomParser parser = new GedcomParser();
         parser.Parse(gedcomFilename);
-        gedcomFamilies = parser.gedcomFamilies;
-        gedcomIndividuals = parser.gedcomIndividuals;
+        AncestryGameData.gedcomFamilies = parser.gedcomFamilies;
+        AncestryGameData.gedcomIndividuals = parser.gedcomIndividuals;
     }
 
     public static void ImportResourceGedcom()
@@ -388,14 +257,14 @@ public class AncestryData
         GedcomParser parser = new GedcomParser();
         TextAsset gedcomFile = (TextAsset)Resources.Load("GedcomData");
         parser.ParseText(gedcomFile.text);
-        gedcomFamilies = parser.gedcomFamilies;
-        gedcomIndividuals = parser.gedcomIndividuals;
+        AncestryGameData.gedcomFamilies = parser.gedcomFamilies;
+        AncestryGameData.gedcomIndividuals = parser.gedcomIndividuals;
     }
 
     public static void InitialiseAncestors()
     {
         ancestors = new Dictionary<string, AncestorIndividual>();
-        ancestorGameData = new Dictionary<string, IndividualSphereData>();
+        AncestryGameData.ancestorGameData = new Dictionary<string, IndividualSphereData>();
         optimizedAncestors = new Dictionary<int, List<AncestorIndividual>>();
         ancestorGenerationCount = new Dictionary<int, int>();
 
@@ -407,9 +276,9 @@ public class AncestryData
 	
 	public static void CalculateAncestorGameObjectData()
     {
-        descentMaleLineVectors = new List<Vector3[]>();
-        descentFemaleLineVectors = new List<Vector3[]>();
-        marriageLineVectors = new List<Vector3[]>();
+        AncestryGameData.descentMaleLineVectors = new List<Vector3[]>();
+        AncestryGameData.descentFemaleLineVectors = new List<Vector3[]>();
+        AncestryGameData.marriageLineVectors = new List<Vector3[]>();
 
         float angle = 0, angleDelta;
 
@@ -451,12 +320,12 @@ public class AncestryData
 				if (!string.IsNullOrEmpty(individual.Suffix))
 					name += "\r\n" + individual.Suffix;
 
-				name += "\r\n" + GenerateBirthDeathDate(individual, true);
+				name += "\r\n" + AncestryUtil.GenerateBirthDeathDate(individual, true);
 				data.Text = name;
-
+                data.Summary = individual.FullSummary;
                 data.Id = individual.Id;
-				
-				ancestorGameData.Add(data.Id, data);
+
+                AncestryGameData.ancestorGameData.Add(data.Id, data);
 
                 angle += angleDelta;
                 individualCount++;
@@ -470,19 +339,19 @@ public class AncestryData
         {
             if (individual.FatherId != null && ancestors.ContainsKey(individual.FatherId))
             {
-                descentMaleLineVectors.Add(new Vector3[2] { ancestorGameData[individual.Id].Position, ancestorGameData[individual.FatherId].Position });
+                AncestryGameData.descentMaleLineVectors.Add(new Vector3[2] { AncestryGameData.ancestorGameData[individual.Id].Position, AncestryGameData.ancestorGameData[individual.FatherId].Position });
             }
             if (individual.MotherId != null && ancestors.ContainsKey(individual.MotherId))
             {
-                descentFemaleLineVectors.Add(new Vector3[2] { ancestorGameData[individual.Id].Position, ancestorGameData[individual.MotherId].Position });
+                AncestryGameData.descentFemaleLineVectors.Add(new Vector3[2] { AncestryGameData.ancestorGameData[individual.Id].Position, AncestryGameData.ancestorGameData[individual.MotherId].Position });
             }
         };
 
-        foreach (GedcomFamily family in gedcomFamilies.Values)
+        foreach (GedcomFamily family in AncestryGameData.gedcomFamilies.Values)
         {
             if (!string.IsNullOrEmpty(family.HusbandId) && ancestors.ContainsKey(family.HusbandId) && !string.IsNullOrEmpty(family.WifeId) && ancestors.ContainsKey(family.WifeId))
             {
-                marriageLineVectors.Add(new Vector3[2] { ancestorGameData[family.HusbandId].Position, ancestorGameData[family.WifeId].Position });
+                AncestryGameData.marriageLineVectors.Add(new Vector3[2] { AncestryGameData.ancestorGameData[family.HusbandId].Position, AncestryGameData.ancestorGameData[family.WifeId].Position });
             }
         }
     }
@@ -496,14 +365,14 @@ public class AncestryData
             File.Delete(GedcomDataFilename);
         using (BinaryWriter writer = new BinaryWriter(new FileStream(GedcomDataFilename, FileMode.OpenOrCreate)))
         {
-            writer.Write(gedcomIndividuals.Values.Count);
-            foreach (GedcomIndividual individual in gedcomIndividuals.Values)
+            writer.Write(AncestryGameData.gedcomIndividuals.Values.Count);
+            foreach (GedcomIndividual individual in AncestryGameData.gedcomIndividuals.Values)
             {
                 writer.Write(individual.Id);
                 individual.WriteToStream(writer);
             }
-            writer.Write(gedcomFamilies.Values.Count);
-            foreach (GedcomFamily family in gedcomFamilies.Values)
+            writer.Write(AncestryGameData.gedcomFamilies.Values.Count);
+            foreach (GedcomFamily family in AncestryGameData.gedcomFamilies.Values)
             {
                 writer.Write(family.Id);
                 family.WriteToStream(writer);
@@ -514,8 +383,8 @@ public class AncestryData
 
     public static void LoadGedcomData()
     {
-        gedcomFamilies = new Dictionary<string, GedcomFamily>();
-        gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
+        AncestryGameData.gedcomFamilies = new Dictionary<string, GedcomFamily>();
+        AncestryGameData.gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
         if (Settings.webMode)
         {
             ImportResourceGedcom();
@@ -530,13 +399,13 @@ public class AncestryData
             int recordCount = reader.ReadInt32();
             for(int i = 0; i < recordCount; i++)
             {
-                gedcomIndividuals.Add(reader.ReadString(), new GedcomIndividual(reader));
+                AncestryGameData.gedcomIndividuals.Add(reader.ReadString(), new GedcomIndividual(reader));
             }
 
             recordCount = reader.ReadInt32();
             for (int i = 0; i < recordCount; i++)
             {
-                gedcomFamilies.Add(reader.ReadString(), new GedcomFamily(reader));
+                AncestryGameData.gedcomFamilies.Add(reader.ReadString(), new GedcomFamily(reader));
             }
         }
     }
@@ -558,15 +427,15 @@ public class AncestryData
                 individual.WriteToStream(writer);
             }
 
-            writer.Write(ancestorGameData.Values.Count);
-            foreach (IndividualSphereData individual in ancestorGameData.Values)
+            writer.Write(AncestryGameData.ancestorGameData.Values.Count);
+            foreach (IndividualSphereData individual in AncestryGameData.ancestorGameData.Values)
             {
                 writer.Write(individual.Id);
                 individual.WriteToStream(writer);
             }
 
-            writer.Write(descentMaleLineVectors.Count);
-            foreach (Vector3[] line in descentMaleLineVectors)
+            writer.Write(AncestryGameData.descentMaleLineVectors.Count);
+            foreach (Vector3[] line in AncestryGameData.descentMaleLineVectors)
             {
                 writer.Write(line[0].x);
                 writer.Write(line[0].y);
@@ -576,8 +445,8 @@ public class AncestryData
                 writer.Write(line[1].z);
             }
 
-            writer.Write(descentFemaleLineVectors.Count);
-            foreach (Vector3[] line in descentFemaleLineVectors)
+            writer.Write(AncestryGameData.descentFemaleLineVectors.Count);
+            foreach (Vector3[] line in AncestryGameData.descentFemaleLineVectors)
             {
                 writer.Write(line[0].x);
                 writer.Write(line[0].y);
@@ -587,8 +456,8 @@ public class AncestryData
                 writer.Write(line[1].z);
             }
 
-            writer.Write(marriageLineVectors.Count);
-            foreach (Vector3[] line in marriageLineVectors)
+            writer.Write(AncestryGameData.marriageLineVectors.Count);
+            foreach (Vector3[] line in AncestryGameData.marriageLineVectors)
             {
                 writer.Write(line[0].x);
                 writer.Write(line[0].y);
@@ -606,10 +475,10 @@ public class AncestryData
             return;
 
         ancestors = new Dictionary<string, AncestorIndividual>();
-        ancestorGameData = new Dictionary<string, IndividualSphereData>();
-        descentMaleLineVectors = new List<Vector3[]>();
-        descentFemaleLineVectors = new List<Vector3[]>();
-        marriageLineVectors = new List<Vector3[]>();
+        AncestryGameData.ancestorGameData = new Dictionary<string, IndividualSphereData>();
+        AncestryGameData.descentMaleLineVectors = new List<Vector3[]>();
+        AncestryGameData.descentFemaleLineVectors = new List<Vector3[]>();
+        AncestryGameData.marriageLineVectors = new List<Vector3[]>();
 
         if (!File.Exists(ProcessedDataFilename))
             return;
@@ -627,25 +496,25 @@ public class AncestryData
             recordCount = reader.ReadInt32();
             for (int i = 0; i < recordCount; i++)
             {
-                ancestorGameData.Add(reader.ReadString(), new IndividualSphereData(reader));
+                AncestryGameData.ancestorGameData.Add(reader.ReadString(), new IndividualSphereData(reader));
             }
 
             recordCount = reader.ReadInt32();
             for (int i = 0; i < recordCount; i++)
             {
-                descentMaleLineVectors.Add(new Vector3[2] {new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
+                AncestryGameData.descentMaleLineVectors.Add(new Vector3[2] {new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
             }
 
             recordCount = reader.ReadInt32();
             for (int i = 0; i < recordCount; i++)
             {
-                descentFemaleLineVectors.Add(new Vector3[2] { new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
+                AncestryGameData.descentFemaleLineVectors.Add(new Vector3[2] { new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
             }
 
             recordCount = reader.ReadInt32();
             for (int i = 0; i < recordCount; i++)
             {
-                marriageLineVectors.Add(new Vector3[2] { new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
+                AncestryGameData.marriageLineVectors.Add(new Vector3[2] { new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()), new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()) });
             }
         }
     }

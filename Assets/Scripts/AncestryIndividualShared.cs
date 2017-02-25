@@ -6,107 +6,76 @@ using System.Text;
 
 namespace Assets
 {
-    public class AncestorIndividual
+    public class AncestorIndividualShared : AncestorIndividual
     {
-        public string Id;
-        public string GivenName;
-        public string Surname;
-        public string Suffix;
-        public string Prefix;
-        public string Sex;
-        public string BirthDate;
-        public string DiedDate;
-        public string FatherId;
-        public string MotherId;
-        public string BirthPlace;
-        public string DiedPlace;
+        public int LowestGeneration1;
+        public int LowestGeneration2;
+        public int HighestGeneration1;
+        public int HighestGeneration2;
+        public long AppearanceCount1;
+        public long AppearanceCount2;
+		public long AhnentafelNumber1;
+		public long AhnentafelNumber2;
 
-        public int LowestGeneration;
-        public int HighestGeneration;
-        public long AppearanceCount;
-		public long AhnentafelNumber;
-
-        public string SummaryName;
-        public string SummaryBirthDate;
-        public string SummaryDeathDate;
-        public Dictionary<string, string> SummarySpouse;
-        public Dictionary<string, string> SummaryMarriage;
-        public Dictionary<string, HashSet<string>> SummaryChildren;
-        public string SummaryFatherName;
-        public string SummaryMotherName;
-        public string SummaryRelationship;
-		public string FullSummary;
-
-        public AncestorIndividual()
+        public AncestorIndividualShared(AncestorIndividual individual1, AncestorIndividual individual2)
         {
-            Id = "";
-            GivenName = "";
-            Surname = "";
-            Suffix = "";
-            Prefix = "";
-            Sex = "";
-            BirthDate = "";
-            DiedDate = "";
-            BirthPlace = "";
-            DiedPlace = "";
-            FatherId = "";
-            MotherId = "";
-            LowestGeneration = 0;
-            HighestGeneration = 0;
-            AppearanceCount = 0;
+            Id = individual1.Id;
+            GivenName = individual1.GivenName;
+            Surname = individual1.Surname;
+            Suffix = individual1.Suffix;
+            Prefix = individual1.Prefix;
+            Sex = individual1.Sex;
+            BirthDate = individual1.BirthDate;
+            DiedDate = individual1.DiedDate;
+            BirthPlace = individual1.BirthPlace;
+            DiedPlace = individual1.DiedPlace;
+            FatherId = individual1.FatherId;
+            MotherId = individual1.MotherId;
+            LowestGeneration = Math.Min(individual1.LowestGeneration, individual2.LowestGeneration);
+            LowestGeneration1 = individual1.LowestGeneration;
+            LowestGeneration2 = individual2.LowestGeneration;
 
-            AhnentafelNumber = 0;
+            HighestGeneration = Math.Max(individual1.HighestGeneration, individual2.HighestGeneration);
+            HighestGeneration1 = individual1.HighestGeneration;
+            HighestGeneration2 = individual2.HighestGeneration;
 
-            SummaryName = "";
-            SummaryFatherName = "";
-            SummaryMotherName = "";
-            SummaryBirthDate = "";
-            SummaryDeathDate = "";
+            AppearanceCount = individual1.AppearanceCount + individual2.AppearanceCount;
+            AppearanceCount1 = individual1.AppearanceCount;
+            AppearanceCount2 = individual2.AppearanceCount;
+
+			AhnentafelNumber = Math.Min(individual1.AhnentafelNumber, individual2.AhnentafelNumber);
+            AhnentafelNumber1 = individual1.AhnentafelNumber;
+            AhnentafelNumber2 = individual2.AhnentafelNumber;
+
+            SummaryName = individual1.SummaryName;
+            SummaryFatherName = individual1.SummaryFatherName;
+            SummaryMotherName = individual1.SummaryMotherName;
+            SummaryBirthDate = individual1.SummaryBirthDate;
+            SummaryDeathDate = individual1.SummaryDeathDate;
             SummarySpouse = new Dictionary<string, string>();
+			foreach(var item in individual1.SummarySpouse)
+				SummarySpouse.Add(item.Key, item.Value);
             SummaryMarriage = new Dictionary<string, string>();
+			foreach(var item in individual1.SummaryMarriage)
+				SummaryMarriage.Add(item.Key, item.Value);
             SummaryChildren = new Dictionary<string, HashSet<string>>();
-            SummaryRelationship = "";
-            FullSummary = "";
+			foreach(var item in individual1.SummaryChildren)
+			{
+				HashSet<string> ids = new HashSet<string>();
+				foreach(string id in item.Value)
+					ids.Add(id);
+				SummaryChildren.Add(item.Key, ids);
+			}
+            SummaryRelationship = individual1.SummaryRelationship;
+			FullSummary = individual1.FullSummary;
         }
 
-        public AncestorIndividual(string id)
-        {
-            Id = id;
-            GivenName = "";
-            Surname = "";
-            Suffix = "";
-            Prefix = "";
-            Sex = "";
-            BirthDate = "";
-            DiedDate = "";
-            BirthPlace = "";
-            DiedPlace = "";
-            FatherId = "";
-            MotherId = "";
-            LowestGeneration = 0;
-            HighestGeneration = 0;
-            AppearanceCount = 0;
-
-            AhnentafelNumber = 0;
-
-            SummaryName = "";
-            SummaryFatherName = "";
-            SummaryMotherName = "";
-            SummaryBirthDate = "";
-            SummaryDeathDate = "";
-            SummarySpouse = new Dictionary<string, string>();
-            SummaryMarriage = new Dictionary<string, string>();
-            SummaryChildren = new Dictionary<string, HashSet<string>>();
-            SummaryRelationship = "";
-			FullSummary = "";
-        }
-
-        public AncestorIndividual(BinaryReader reader)
+        public AncestorIndividualShared(BinaryReader reader)
         {
             ReadFromStream(reader);
         }
 
-        public void WriteToStream(BinaryWriter writer)
+        public new void WriteToStream(BinaryWriter writer)
         {
             writer.Write(Id);
             writer.Write(GivenName);
@@ -121,9 +90,17 @@ namespace Assets
             writer.Write(FatherId);
             writer.Write(MotherId);
             writer.Write(LowestGeneration);
+            writer.Write(LowestGeneration1);
+            writer.Write(LowestGeneration2);
             writer.Write(HighestGeneration);
+            writer.Write(HighestGeneration1);
+            writer.Write(HighestGeneration2);
             writer.Write(AppearanceCount);
+            writer.Write(AppearanceCount1);
+            writer.Write(AppearanceCount2);
             writer.Write(AhnentafelNumber);
+            writer.Write(AhnentafelNumber1);
+            writer.Write(AhnentafelNumber2);
             writer.Write(SummaryName);
             writer.Write(SummaryFatherName);
             writer.Write(SummaryMotherName);
@@ -171,10 +148,18 @@ namespace Assets
             FatherId = reader.ReadString();
             MotherId = reader.ReadString();
             LowestGeneration = reader.ReadInt32();
+            LowestGeneration1 = reader.ReadInt32();
+            LowestGeneration2 = reader.ReadInt32();
             HighestGeneration = reader.ReadInt32();
+            HighestGeneration1 = reader.ReadInt32();
+            HighestGeneration2 = reader.ReadInt32();
             AppearanceCount = reader.ReadInt64();
+            AppearanceCount1 = reader.ReadInt64();
+            AppearanceCount2 = reader.ReadInt64();
 
             AhnentafelNumber = reader.ReadInt64();
+            AhnentafelNumber1 = reader.ReadInt64();
+            AhnentafelNumber2 = reader.ReadInt64();
 
             SummaryName = reader.ReadString();
             SummaryFatherName = reader.ReadString();
