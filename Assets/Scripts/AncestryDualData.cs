@@ -319,7 +319,7 @@ public class AncestryDualData
 
 		individual.SummaryRelationship = String.Format("{0} {1}", AncestryGameData.gedcomIndividuals["@" + Settings.RootIndividualId + "@"].GivenName, AncestryGameData.gedcomIndividuals["@" + Settings.RootIndividualId + "@"].Surname).Trim() + "'s " + AncestryUtil.CalculateRelationship(individual.LowestGeneration1, individual.Sex.ToUpper() == "M");
 		individual.SummaryRelationship += "\r\n" + String.Format("{0} {1}", AncestryGameData.gedcomIndividuals["@" + Settings.RootIndividualId2 + "@"].GivenName, AncestryGameData.gedcomIndividuals["@" + Settings.RootIndividualId2 + "@"].Surname).Trim() + "'s " + AncestryUtil.CalculateRelationship(individual.LowestGeneration2, individual.Sex.ToUpper() == "M");
-
+        individual.SummaryRelationship += "\r\nCommon Relationship: " + AncestryUtil.CalculateCousinRelationship(individual.LowestGeneration1, individual.LowestGeneration2, individual.Sex.ToLower() == "m");
 		string born = AncestryUtil.ProcessDate(individual.BirthDate, false);
 		if (born != "?" || !string.IsNullOrEmpty(individual.BirthPlace.Trim()))
 			individual.SummaryBirthDate = string.Format("b. {0} {1}", born, individual.BirthPlace).Trim();
