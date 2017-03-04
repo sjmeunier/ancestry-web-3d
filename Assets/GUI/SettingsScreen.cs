@@ -97,7 +97,7 @@ public class SettingsScreen {
         Settings.MaxDepth = Int32.Parse(GUILayout.TextField(Settings.MaxDepth.ToString()));
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        Settings.ShowFlags = GUILayout.Toggle(Settings.ShowDescentLines, "Show Flags");
+        Settings.ShowFlags = GUILayout.Toggle(Settings.ShowFlags, "Show Flags");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         Settings.ShowDescentLines = GUILayout.Toggle(Settings.ShowDescentLines, "Draw Descent Lines");
