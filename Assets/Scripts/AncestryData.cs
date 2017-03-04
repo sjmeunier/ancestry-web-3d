@@ -48,6 +48,8 @@ public class AncestryData
 
             individual.AhnentafelNumber = ahnentafelNumber;
 
+			individual.CountryCode = AncestryUtil.GetCountryCodeForIndividual(individualId);
+			
             foreach (GedcomFamily family in AncestryGameData.gedcomFamilies.Values)
             {
                 if (family.Children.Contains(individualId))
@@ -323,8 +325,13 @@ public class AncestryData
 				name += "\r\n" + AncestryUtil.GenerateBirthDeathDate(individual, true);
 				data.Text = name;
                 data.Summary = individual.FullSummary;
-                data.Id = individual.Id;
-
+                data.SphereTexture = string.Format("{0}_{1}", individual.CountryCode, individual.Sex.ToLower() == "male" ? "m" : "f");
+                if (Settings.ShowFlags && !string.IsNullOrEmpty(data.SphereTexture))
+                {
+                    Texture2D texture = (Texture2D)Resources.Load("Flags/" + data.SphereTexture);
+                    if (texture != null)
+                        data.MaterialColor = Color.white;
+                }
                 AncestryGameData.ancestorGameData.Add(data.Id, data);
 
                 angle += angleDelta;

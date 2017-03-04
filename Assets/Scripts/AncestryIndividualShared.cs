@@ -68,6 +68,7 @@ namespace Assets
 			}
             SummaryRelationship = individual1.SummaryRelationship;
 			FullSummary = individual1.FullSummary;
+			CountryCode = individual1.CountryCode;
         }
 
         public AncestorIndividualShared(BinaryReader reader)
@@ -108,7 +109,8 @@ namespace Assets
             writer.Write(SummaryDeathDate);
             writer.Write(SummaryRelationship);
             writer.Write(FullSummary);
-
+			writer.Write(CountryCode);
+			
             writer.Write(SummarySpouse.Count);
             foreach(KeyValuePair<string, string> values in SummarySpouse)
             {
@@ -168,7 +170,8 @@ namespace Assets
             SummaryDeathDate = reader.ReadString();
             SummaryRelationship = reader.ReadString();
             FullSummary = reader.ReadString();
-
+			CountryCode = reader.ReadString();
+			
             SummarySpouse = new Dictionary<string, string>();
             int recordCount = reader.ReadInt32();
             for(int i = 0; i < recordCount; i++)

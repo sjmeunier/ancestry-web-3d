@@ -8,6 +8,7 @@ public class Settings : MonoBehaviour
     public static string RootIndividualId = "I0001";
 	public static string RootIndividualId2 = "I7951";
 	public static bool IsDualMode = false;
+	public static bool ShowFlags = true;
     public static int MaxDepth = 50;
     public static bool ShowDescentLines = true;
     public static bool ShowMarriageLines = false;
@@ -31,6 +32,7 @@ public class Settings : MonoBehaviour
             writer.Write(RootIndividualId);
 			writer.Write(RootIndividualId2);
 			writer.Write(IsDualMode);
+			writer.Write(ShowFlags);
             writer.Write(MaxDepth);
             writer.Write(ShowDescentLines);
             writer.Write(ShowMarriageLines);
@@ -56,6 +58,7 @@ public class Settings : MonoBehaviour
                 RootIndividualId = reader.ReadString();
 				RootIndividualId2 = reader.ReadString();
 				IsDualMode = reader.ReadBoolean();
+				ShowFlags = reader.ReadBoolean();
                 MaxDepth = reader.ReadInt32();
                 ShowDescentLines = reader.ReadBoolean();
                 ShowMarriageLines = reader.ReadBoolean();

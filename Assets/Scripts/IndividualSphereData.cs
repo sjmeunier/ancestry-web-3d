@@ -12,7 +12,7 @@ namespace Assets
         public float SphereRadius;
         public string ObjectType;
         public string Summary;
-
+        public string SphereTexture;
 
         public IndividualSphereData(string id)
         {
@@ -23,6 +23,7 @@ namespace Assets
             SphereRadius = 1;
             ObjectType = "IndividualSphere";
             Summary = "";
+            SphereTexture = "";
         }
 
         public IndividualSphereData(BinaryReader reader)
@@ -44,6 +45,7 @@ namespace Assets
             writer.Write(SphereRadius);
             writer.Write(ObjectType);
             writer.Write(Summary);
+            writer.Write(SphereTexture);
         }
 
         private void ReadFromStream(BinaryReader reader)
@@ -55,6 +57,7 @@ namespace Assets
             SphereRadius = reader.ReadSingle();
             ObjectType = reader.ReadString();
             Summary = reader.ReadString();
+            SphereTexture = reader.ReadString();
         }
     }
 

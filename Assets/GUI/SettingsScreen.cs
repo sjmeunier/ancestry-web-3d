@@ -21,6 +21,7 @@ public class SettingsScreen {
     private static string oldIndividual = "";
     private static string oldIndividual2 = "";
     private static bool oldIsDualMode = false;
+	private static bool oldShowFlags = false;
     private static int oldMaxGenerations = 0;
 
 	//Constructors
@@ -96,6 +97,9 @@ public class SettingsScreen {
         Settings.MaxDepth = Int32.Parse(GUILayout.TextField(Settings.MaxDepth.ToString()));
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
+        Settings.ShowFlags = GUILayout.Toggle(Settings.ShowDescentLines, "Show Flags");
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
         Settings.ShowDescentLines = GUILayout.Toggle(Settings.ShowDescentLines, "Draw Descent Lines");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
@@ -126,6 +130,9 @@ public class SettingsScreen {
         if (loadClicked)
         {
             Settings.SaveSettings();
+			if (Settings.ShowFlags != oldShowFlags)
+				AncestryWeb.loadedData = false;
+			
             if (AncestryWeb.loadedObjects == false)
             {
                 if (AncestryWeb.loadedData == true)
@@ -146,6 +153,7 @@ public class SettingsScreen {
             SettingsScreen.oldIndividual2 = Settings.RootIndividualId2;
             SettingsScreen.oldIsDualMode = Settings.IsDualMode;
             SettingsScreen.oldMaxGenerations = Settings.MaxDepth;
+			SettingsScreen.oldShowFlags = Settings.ShowFlags;
         }
 		
 	}

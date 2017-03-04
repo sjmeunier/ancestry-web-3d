@@ -65,6 +65,12 @@ public class AncestryWeb : MonoBehaviour
         {
 			individualSpheres[i] = (GameObject)Instantiate(Resources.Load(data.ObjectType), data.Position, Quaternion.identity);
             individualSpheres[i].transform.GetChild(0).GetComponent<Renderer>().material.color = data.MaterialColor;
+            if (Settings.ShowFlags && !string.IsNullOrEmpty(data.SphereTexture))
+            {
+                Texture2D texture = (Texture2D)Resources.Load("Flags/" + data.SphereTexture);
+                if (texture != null)
+                    individualSpheres[i].transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = texture;
+            }
             individualSpheres[i].transform.localScale = new Vector3(data.SphereRadius, data.SphereRadius, data.SphereRadius);
 
 			individualSpheres[i].transform.GetChild(1).GetComponent<TextMesh>().text = data.Text;

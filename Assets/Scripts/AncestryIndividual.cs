@@ -20,6 +20,7 @@ namespace Assets
         public string MotherId;
         public string BirthPlace;
         public string DiedPlace;
+		public string CountryCode;
 
         public int LowestGeneration;
         public int HighestGeneration;
@@ -67,6 +68,8 @@ namespace Assets
             SummaryChildren = new Dictionary<string, HashSet<string>>();
             SummaryRelationship = "";
             FullSummary = "";
+			
+			CountryCode = "";
         }
 
         public AncestorIndividual(string id)
@@ -99,6 +102,7 @@ namespace Assets
             SummaryChildren = new Dictionary<string, HashSet<string>>();
             SummaryRelationship = "";
 			FullSummary = "";
+			CountryCode = "";
         }
 
         public AncestorIndividual(BinaryReader reader)
@@ -131,6 +135,7 @@ namespace Assets
             writer.Write(SummaryDeathDate);
             writer.Write(SummaryRelationship);
             writer.Write(FullSummary);
+			writer.Write(CountryCode);
 
             writer.Write(SummarySpouse.Count);
             foreach(KeyValuePair<string, string> values in SummarySpouse)
@@ -184,6 +189,8 @@ namespace Assets
             SummaryRelationship = reader.ReadString();
             FullSummary = reader.ReadString();
 
+			CountryCode = reader.ReadString();
+			
             SummarySpouse = new Dictionary<string, string>();
             int recordCount = reader.ReadInt32();
             for(int i = 0; i < recordCount; i++)

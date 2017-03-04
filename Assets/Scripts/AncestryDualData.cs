@@ -59,7 +59,9 @@ public class AncestryDualData
             individual.HighestGeneration = depth;
 
             individual.AhnentafelNumber = ahnentafelNumber;
-
+			
+			individual.CountryCode = AncestryUtil.GetCountryCodeForIndividual(individualId);
+			
             foreach (GedcomFamily family in AncestryGameData.gedcomFamilies.Values)
             {
                 if (family.Children.Contains(individualId))
@@ -319,7 +321,7 @@ public class AncestryDualData
 
 		individual.SummaryRelationship = String.Format("{0} {1}", AncestryGameData.gedcomIndividuals["@" + Settings.RootIndividualId + "@"].GivenName, AncestryGameData.gedcomIndividuals["@" + Settings.RootIndividualId + "@"].Surname).Trim() + "'s " + AncestryUtil.CalculateRelationship(individual.LowestGeneration1, individual.Sex.ToUpper() == "M");
 		individual.SummaryRelationship += "\r\n" + String.Format("{0} {1}", AncestryGameData.gedcomIndividuals["@" + Settings.RootIndividualId2 + "@"].GivenName, AncestryGameData.gedcomIndividuals["@" + Settings.RootIndividualId2 + "@"].Surname).Trim() + "'s " + AncestryUtil.CalculateRelationship(individual.LowestGeneration2, individual.Sex.ToUpper() == "M");
-        individual.SummaryRelationship += "\r\nCommon Relationship: " + AncestryUtil.CalculateCousinRelationship(individual.LowestGeneration1, individual.LowestGeneration2, individual.Sex.ToLower() == "m");
+
 		string born = AncestryUtil.ProcessDate(individual.BirthDate, false);
 		if (born != "?" || !string.IsNullOrEmpty(individual.BirthPlace.Trim()))
 			individual.SummaryBirthDate = string.Format("b. {0} {1}", born, individual.BirthPlace).Trim();
@@ -563,6 +565,7 @@ public class AncestryDualData
 				name += "\r\n" + AncestryUtil.GenerateBirthDeathDate(individual, true);
 				data.Text = name;
                 data.Summary = individual.FullSummary;
+				data.SphereTexture = individual.CountryCode;
                 data.Id = individual.Id;
 				
 				AncestryGameData.ancestorGameData.Add(data.Id, data);
@@ -617,6 +620,7 @@ public class AncestryDualData
 				name += "\r\n" + AncestryUtil.GenerateBirthDeathDate(individual, true);
 				data.Text = name;
                 data.Summary = individual.FullSummary;
+				data.SphereTexture = individual.CountryCode;
                 data.Id = individual.Id;
 				
 				AncestryGameData.ancestorGameData.Add(data.Id, data);
@@ -670,6 +674,13 @@ public class AncestryDualData
 				name += "\r\n" + AncestryUtil.GenerateBirthDeathDate(individual, true);
 				data.Text = name;
                 data.Summary = individual.FullSummary;
+				data.SphereTexture = string.Format("{0}_{1}", individual.CountryCode, individual.Sex.ToLower() == "male" ? "m" : "f");
+                if (Settings.ShowFlags && !string.IsNullOrEmpty(data.SphereTexture))
+                {
+                    Texture2D texture = (Texture2D)Resources.Load("Flags/" + data.SphereTexture);
+                    if (texture != null)
+                        data.MaterialColor = Color.white;
+                }
                 data.Id = individual.Id;
 				
 				AncestryGameData.ancestorGameData.Add(data.Id, data);
