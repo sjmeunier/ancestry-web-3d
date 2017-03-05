@@ -675,7 +675,7 @@ public class AncestryDualData
 				name += "\r\n" + AncestryUtil.GenerateBirthDeathDate(individual, true);
 				data.Text = name;
                 data.Summary = individual.FullSummary;
-				data.SphereTexture = string.Format("{0}_{1}", individual.CountryCode, individual.Sex.ToLower() == "male" ? "m" : "f");
+				data.SphereTexture = string.Format("{0}_{1}", individual.CountryCode, individual.Sex.ToLower() == "m" ? "m" : "f");
                 if (Settings.ShowFlags && !string.IsNullOrEmpty(data.SphereTexture))
                 {
                     Texture2D texture = (Texture2D)Resources.Load("Flags/" + data.SphereTexture);
