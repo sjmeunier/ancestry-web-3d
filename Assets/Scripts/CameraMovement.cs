@@ -104,10 +104,10 @@ public class CameraMovement : MonoBehaviour
             AncestryWeb.ShowSettings();
         }
 
-        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
-            individualSphere.transform.localRotation = transform.rotation;
-        foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
-            individualSphere.transform.localRotation = transform.rotation;
+       // foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Individual"))
+       //     individualSphere.transform.localRotation = transform.rotation;
+       // foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
+      //      individualSphere.transform.localRotation = transform.rotation;
 
         if (!isPanning && !isRotating && !isZooming && AncestryWeb.loadedObjects)
         {
