@@ -155,6 +155,12 @@ public class AncestryUtil
         if (string.IsNullOrEmpty(countryName))
             return string.Empty;
 
+        //Exceptions
+        if (countryName.Contains("Congo"))
+            return "cd";
+        if (countryName.Contains("Scotland") || countryName.Contains("England") || countryName.Contains("Wales") || countryName.Contains("Northern Ireland"))
+            return "gb";
+
         foreach(CultureInfo culture in cultures)
         {
             RegionInfo region = new RegionInfo(culture.LCID);
@@ -169,4 +175,70 @@ public class AncestryUtil
         }
         return string.Empty;
 	}
+
+    public static string CalculateCousinRelationship(int generationsFirstPerson, int generationsSecondPerson, bool isSecondPersonMale)
+    {
+        if (generationsFirstPerson == 0 || generationsSecondPerson == 0)
+            return String.Empty;
+
+        string relationship = "";
+
+        int difference = (int)Math.Abs(generationsFirstPerson - generationsSecondPerson);
+
+        if (difference == 0 && generationsSecondPerson == 1) //Siblings
+        {
+            if (isSecondPersonMale)
+                relationship = "Brother";
+            else
+                relationship = "Sister";
+        }
+        else if (generationsSecondPerson == 1)
+        { //Aunt or Uncle
+            if (isSecondPersonMale)
+                relationship = "Uncle";
+            else
+                relationship = "Aunt";
+
+            if (difference == 2)
+                relationship = string.Format("Great-{0}", relationship.ToLower());
+            else if (difference > 2)
+                relationship = string.Format("Great({1})-{0}", relationship.ToLower(), difference - 1);
+
+        }
+        else if (generationsFirstPerson == 1)
+        { //Niece or nephew
+            if (isSecondPersonMale)
+                relationship = "Nephew";
+            else
+                relationship = "Niece";
+
+            if (difference == 2)
+                relationship = string.Format("Great-{0}", relationship.ToLower());
+            else if (difference > 2)
+                relationship = string.Format("Great({1})-{0}", relationship.ToLower(), difference - 1);
+        }
+        else
+        { //Cousin
+            int maxGenerations = (int)Math.Max(generationsFirstPerson, generationsSecondPerson);
+            int minGenerations = (int)Math.Min(generationsFirstPerson, generationsSecondPerson);
+
+            if (minGenerations % 10 == 2)
+                relationship = string.Format("{0}st cousins", minGenerations - 1);
+            else if (minGenerations % 10 == 3)
+                relationship = string.Format("{0}nd cousins", minGenerations - 2);
+            else if (minGenerations % 10 == 4)
+                relationship = string.Format("{0}rd cousins", minGenerations - 3);
+            else
+                relationship = string.Format("{0}th cousins", minGenerations - 4);
+
+            if (difference == 1)
+                relationship = string.Format("{0} once removed", relationship);
+            else if (difference == 2)
+                relationship = string.Format("{0} twice removed", relationship);
+            else if (difference > 2)
+                relationship = string.Format("{0} {1}x removed", relationship, difference);
+        }
+
+        return relationship;
+    }
 }
