@@ -71,6 +71,7 @@ public class AncestryWeb : MonoBehaviour
                 if (texture != null)
                     individualSpheres[i].transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = texture;
             }
+            individualSpheres[i].transform.GetChild(2).GetComponent<Renderer>().enabled = false;
             individualSpheres[i].transform.localScale = new Vector3(data.SphereRadius, data.SphereRadius, data.SphereRadius);
 
 			individualSpheres[i].transform.GetChild(1).GetComponent<TextMesh>().text = data.Text;

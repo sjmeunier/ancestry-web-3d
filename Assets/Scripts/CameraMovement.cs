@@ -115,7 +115,7 @@ public class CameraMovement : MonoBehaviour
             {
                 foreach (GameObject individualSphere in GameObject.FindGameObjectsWithTag("Highlighted"))
                 {
-                    individualSphere.transform.GetChild(0).GetComponent<Renderer>().material.color = AncestryGameData.ancestorGameData[AncestryGameData.selectedIndividualId].MaterialColor;
+                    hit.collider.GetComponentInParent<IndividualSphere>().transform.GetChild(2).GetComponent<Renderer>().enabled = false;
                     individualSphere.tag = "Individual";
                 }
             }
@@ -126,8 +126,9 @@ public class CameraMovement : MonoBehaviour
                 if (hit.collider.name.Contains("Sphere"))
                 {
                     AncestryGameData.selectedIndividualId = hit.collider.GetComponentInParent<IndividualSphere>().individualId;
-
-                    hit.collider.GetComponentInParent<IndividualSphere>().transform.GetChild(0).GetComponent<Renderer>().material.color = Color.yellow;
+                    
+                    hit.collider.GetComponentInParent<IndividualSphere>().transform.GetChild(2).GetComponent<Renderer>().material.SetColor("_Color", Color.yellow);
+                    hit.collider.GetComponentInParent<IndividualSphere>().transform.GetChild(2).GetComponent<Renderer>().enabled = true;
                     hit.collider.GetComponentInParent<IndividualSphere>().tag = "Highlighted";
                 }
 

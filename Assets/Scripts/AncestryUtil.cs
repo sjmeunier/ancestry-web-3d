@@ -219,7 +219,6 @@ public class AncestryUtil
         }
         else
         { //Cousin
-            int maxGenerations = (int)Math.Max(generationsFirstPerson, generationsSecondPerson);
             int minGenerations = (int)Math.Min(generationsFirstPerson, generationsSecondPerson);
 
             if (minGenerations % 10 == 2)
