@@ -30,10 +30,15 @@ namespace GedcomLib
                //Waiting
             }
 
-            string[] lines = request.text.Split(new string[] { "\n" }, StringSplitOptions.None);
+            ParseText(request.text);
+        }
+
+        public void ParseText(string text)
+        {
+            string[] lines = text.Split(new string[] { "\r\n" }, StringSplitOptions.None);
             string line;
             char[] separators = new char[1] { ' ' };
-            foreach(string linevar in lines)
+            foreach (string linevar in lines)
             {
                 line = linevar.Replace("'", "''");
                 while (line.IndexOf("  ") > 0)

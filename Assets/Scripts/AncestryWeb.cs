@@ -58,13 +58,20 @@ public class AncestryWeb : MonoBehaviour
 
     private void CreateGameObjects()
     {
-        individualSpheres = new GameObject[AncestryData.ancestorGameData.Values.Count()];
+        individualSpheres = new GameObject[AncestryGameData.ancestorGameData.Values.Count()];
 		
 		int i = 0;
-		foreach(IndividualSphereData data in AncestryData.ancestorGameData.Values)
+		foreach(IndividualSphereData data in AncestryGameData.ancestorGameData.Values)
         {
 			individualSpheres[i] = (GameObject)Instantiate(Resources.Load(data.ObjectType), data.Position, Quaternion.identity);
             individualSpheres[i].transform.GetChild(0).GetComponent<Renderer>().material.color = data.MaterialColor;
+            if (Settings.ShowFlags && !string.IsNullOrEmpty(data.SphereTexture))
+            {
+                Texture2D texture = (Texture2D)Resources.Load("Flags/" + data.SphereTexture);
+                if (texture != null)
+                    individualSpheres[i].transform.GetChild(0).GetComponent<Renderer>().material.mainTexture = texture;
+            }
+            individualSpheres[i].transform.GetChild(2).GetComponent<Renderer>().enabled = false;
             individualSpheres[i].transform.localScale = new Vector3(data.SphereRadius, data.SphereRadius, data.SphereRadius);
 
 			individualSpheres[i].transform.GetChild(1).GetComponent<TextMesh>().text = data.Text;
@@ -78,16 +85,16 @@ public class AncestryWeb : MonoBehaviour
 
         }
 
-        foreach (var line in AncestryData.descentMaleLineVectors)
+        foreach (var line in AncestryGameData.descentMaleLineVectors)
         {
             CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MaleLineCylinder", "DescentMaleLine");
         };
 
-        foreach (var line in AncestryData.descentFemaleLineVectors)
+        foreach (var line in AncestryGameData.descentFemaleLineVectors)
         {
             CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "FemaleLineCylinder", "DescentFemaleLine");
         };
-        foreach (var line in AncestryData.marriageLineVectors)
+        foreach (var line in AncestryGameData.marriageLineVectors)
         {
             CreateCylinderBetweenPoints(line[0], line[1], lineWidth, "MarriageLineCylinder", "MarriageLine");
         };
@@ -137,16 +144,26 @@ public class AncestryWeb : MonoBehaviour
 
     void Start()
     {
-        AncestryData.gedcomFamilies = new Dictionary<string, GedcomFamily>();
-        AncestryData.gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
+        AncestryGameData.gedcomFamilies = new Dictionary<string, GedcomFamily>();
+        AncestryGameData.gedcomIndividuals = new Dictionary<string, GedcomIndividual>();
         Settings.LoadSettings();
         AncestryData.LoadGedcomData();
         AncestryData.LoadProcessedData();
-        if (AncestryData.ancestors.Count > 0)
-            loadedData = true;
-        else
-            loadedData = false;
-
+		if (Settings.IsDualMode) 
+		{
+			if (AncestryDualData.ancestors1.Count > 0 || AncestryDualData.ancestors2.Count > 0 || AncestryDualData.ancestorsShared.Count > 0)
+				loadedData = true;
+			else
+				loadedData = false;
+			
+		}
+		else
+		{
+			if (AncestryData.ancestors.Count > 0)
+				loadedData = true;
+			else
+				loadedData = false;
+		}
         ancestryState = AncestryState.Settings;
 
 		if (string.IsNullOrEmpty(Settings.CurrentFolder))
@@ -170,22 +187,32 @@ public class AncestryWeb : MonoBehaviour
         yield return new WaitForSeconds(0.25f);
         loadedObjects = false;
 		DeleteGameObjects();
-        AncestryData.InitialiseAncestors();
+		if (Settings.IsDualMode)
+			AncestryDualData.InitialiseAncestors();
+		else
+			AncestryData.InitialiseAncestors();
         ancestryState = AncestryState.InitialisingObjects;
         StopCoroutine("InitData");
     }
 
-    
+   
     private IEnumerator InitObjects()
     {
         loadingText = "Initialising objects...";
         yield return new WaitForSeconds(0.25f);
         loadedObjects = false;
         DeleteGameObjects();
-        AncestryData.InitialiseAncestors();
+		if (Settings.IsDualMode)
+			AncestryDualData.InitialiseAncestors();
+		else
+			AncestryData.InitialiseAncestors();
         CreateGameObjects();
         UpdateVisiblity();
-        AncestryData.SaveProcessedDataFile();
+		if (Settings.IsDualMode)
+			AncestryDualData.SaveProcessedDataFile();
+		else
+			AncestryData.SaveProcessedDataFile();
+        
         ancestryState = AncestryState.Main;
         loadedObjects = true;
         StopCoroutine("InitObjects");
@@ -206,8 +233,16 @@ public class AncestryWeb : MonoBehaviour
         yield return new WaitForSeconds(0.25f);
         loadedObjects = false;
 		DeleteGameObjects();
-		AncestryData.ImportGedcom(GedcomFilename);
-        AncestryData.SaveGedcomData();
+		if (Settings.IsDualMode)
+		{
+			AncestryData.ImportGedcom(GedcomFilename);
+			AncestryData.SaveGedcomData();
+		}
+		else
+		{
+			AncestryData.ImportGedcom(GedcomFilename);
+			AncestryData.SaveGedcomData();
+		}
         ancestryState = AncestryState.Settings;
         StopCoroutine("ImportData");
     }
@@ -230,6 +265,8 @@ public class AncestryWeb : MonoBehaviour
                 else
                 {
                     AncestryWeb.GedcomFilename = fb.outputFile.FullName;
+                    Settings.LastImportFilename = AncestryWeb.GedcomFilename;
+                    Settings.LastImportDate = DateTime.Now;
                     Settings.CurrentFolder = fb.outputFile.Directory.FullName;
                     Settings.SaveSettings();
                     ancestryState = AncestryState.ImportingData;
@@ -258,11 +295,11 @@ public class AncestryWeb : MonoBehaviour
         }
         else if (ancestryState == AncestryState.Main)
         {
-            if (AncestryData.selectedIndividualId != null && AncestryData.selectedIndividual != null)
+            if (AncestryGameData.selectedIndividualId != null)
             {
                 GUILayout.BeginArea(new Rect(10f, 10f, Screen.width * 0.3f, Screen.height - 20f));
                 GUILayout.BeginVertical("box");
-                GUILayout.Label(AncestryData.selectedIndividual.FullSummary);
+                GUILayout.Label(AncestryGameData.ancestorGameData[AncestryGameData.selectedIndividualId].Summary);
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
             }
