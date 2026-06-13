@@ -1,3 +1,6 @@
+## Depreciated
+This repo is now deprecated and has moved to my private Git server [https://git.magna-ursa.com/sjmeunier/ancestry-web-3d](https://git.magna-ursa.com/sjmeunier/ancestry-web-3d).
+
 # ancestry-web-3d
 A 3D family tree representation using Unity to show the interconnectedness of your ancestors.
 
